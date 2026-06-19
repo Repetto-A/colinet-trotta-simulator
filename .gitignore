@@ -1,0 +1,28 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# next.js
+.next/
+out/
+
+# build / test
+dist/
+coverage/
+*.tsbuildinfo
+
+# env
+.env
+.env*.local
+
+# debug / os
+npm-debug.log*
+.DS_Store
+Thumbs.db
+
+# ide / tooling caches
+.idea/
+.vscode/
+.atl/
+.playwright-cli/
+.playwright-mcp/

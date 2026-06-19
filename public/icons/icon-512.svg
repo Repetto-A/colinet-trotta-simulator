@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="url(#bg)"/>
+  <defs>
+    <linearGradient id="bg" x1="64" y1="48" x2="448" y2="464" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#0EA5E9"/>
+      <stop offset="1" stop-color="#6366F1"/>
+    </linearGradient>
+  </defs>
+  <rect x="112" y="136" width="152" height="192" rx="24" fill="white" fill-opacity="0.95"/>
+  <rect x="248" y="176" width="152" height="152" rx="24" fill="white" fill-opacity="0.75"/>
+  <path d="M152 232h64M152 272h64M152 312h44" stroke="#6366F1" stroke-width="14" stroke-linecap="round"/>
+  <circle cx="324" cy="252" r="36" fill="#0EA5E9"/>
+  <text x="256" y="420" text-anchor="middle" fill="white" font-family="system-ui,sans-serif" font-size="48" font-weight="700">Colinet Trotta</text>
+</svg>
