@@ -5,6 +5,7 @@ import {
   applyBusinessAction,
   applyEventEffects,
   applyTacticalTune,
+  buildThresholdAlerts,
   executeStrategicTurn,
   INITIATIVE_ASSIGNMENT_COST,
   TACTICAL_TUNE_COST,
@@ -102,7 +103,7 @@ describe("game engine transitions", () => {
     expect(result.initiativeCompletions.length).toBe(1)
   })
 
-  it("applies tactical tune without cooldown", () => {
+  it("applies tactical tune and consumes one turn", () => {
     const state = createScenarioState("core_pressure")
     state.teamCapacity = 20
     state.clientSatisfaction = 80
@@ -117,8 +118,48 @@ describe("game engine transitions", () => {
   })
 
   it("uses updated balance constants for initiative and tune costs", () => {
-    expect(TACTICAL_TUNE_COST).toBe(24)
+    expect(TACTICAL_TUNE_COST).toBe(28)
     expect(INITIATIVE_ASSIGNMENT_COST).toBe(25)
+  })
+
+  it("applies cooldown to tactical tune in the strategic pipeline", () => {
+    const state = createScenarioState("core_pressure")
+    const tune = BUSINESS_ACTIONS.find((item) => item.id === "tune")!
+    const baseCooldowns = {
+      stabilize: 0,
+      modernize: 0,
+      govern: 0,
+      innovate: 0,
+      tune: 0,
+      motivate: 0,
+      culture_bbq: 0,
+      train_team: 0,
+      delegate_fronts: 0,
+      situational_leadership: 0,
+    }
+
+    const first = executeStrategicTurn({
+      previousState: state,
+      action: tune,
+      currentSeason: "spring",
+      cooldowns: baseCooldowns,
+      scenarioId: "core_pressure",
+      risk: "Test risk",
+    })
+
+    expect(first).not.toBeNull()
+    expect(first!.cooldowns.tune).toBe(1)
+
+    const second = executeStrategicTurn({
+      previousState: first!.state,
+      action: tune,
+      currentSeason: first!.currentSeason,
+      cooldowns: first!.cooldowns,
+      scenarioId: "core_pressure",
+      risk: "Test risk",
+    })
+
+    expect(second).toBeNull()
   })
 
   it("registers multi-turn modifiers when accepting long events", () => {
@@ -196,5 +237,16 @@ describe("game engine transitions", () => {
     expect(feedback.gains.length).toBeGreaterThan(0)
     expect(feedback.losses.length).toBeGreaterThan(0)
     expect(feedback.risk).toBe("Gobernanza frágil")
+  })
+
+  it("adds alerts for client risk and imminent cycle close", () => {
+    const state = createScenarioState("core_pressure")
+    state.clientSatisfaction = 35
+    state.turn = 11
+
+    const alerts = buildThresholdAlerts(state)
+
+    expect(alerts.some((alert) => alert.includes("Clientes en riesgo"))).toBe(true)
+    expect(alerts.some((alert) => alert.includes("Cierre inminente"))).toBe(true)
   })
 })

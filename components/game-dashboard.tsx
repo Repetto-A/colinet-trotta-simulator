@@ -16,6 +16,8 @@ import InitiativeSelector from "@/components/initiative-selector"
 
 import EventModal from "@/components/event-modal"
 
+import ActiveEventsRail from "@/components/active-events-rail"
+
 import MissionPanel from "@/components/mission-panel"
 
 import AchievementSystem from "@/components/achievement-system"
@@ -28,7 +30,7 @@ import GameProgressStrip from "@/components/game-progress-strip"
 
 import MobileDecisionDock from "@/components/mobile-decision-dock"
 
-import { AlertTriangle, ChevronDown, ChevronUp, X, Trophy } from "lucide-react"
+import { AlertTriangle, ChevronDown, ChevronUp, Trophy } from "lucide-react"
 
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
@@ -57,6 +59,8 @@ import type { LearningRecap } from "@/lib/learning-recap"
 import type { PersistedGamePayload } from "@/lib/use-game-persistence"
 
 import type { BusinessActionDefinition } from "@/lib/business-decisions"
+
+import AlertList from "@/components/alert-list"
 
 import OfficeScene from "@/components/office-scene"
 
@@ -298,7 +302,7 @@ export default function GameDashboard({
 
       <div className="mb-4 flex items-center justify-between gap-2">
 
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">Portafolio de iniciativas</h2>
+        <h2 className="text-base font-semibold text-foreground sm:text-lg">Frentes de trabajo</h2>
 
         <span className="rounded-full bg-slate-100 px-2 py-1 text-right text-xs text-slate-700 sm:px-3">
 
@@ -309,21 +313,9 @@ export default function GameDashboard({
       </div>
 
       <PortfolioMap
-
-        clientSatisfaction={gameState.clientSatisfaction}
-
-        processControl={gameState.processControl}
-
-        executionSpeed={gameState.executionSpeed}
-
-        teamCapacity={gameState.teamCapacity}
-
         initiativeSlots={gameState.initiativeSlots}
-
         onSlotClick={handlePlotClick}
-
         currentSeason={season}
-
       />
 
     </div>
@@ -493,6 +485,19 @@ export default function GameDashboard({
           pulseKey={feedbackPulseKey}
         />
 
+        <ActiveEventsRail modifiers={gameState.activeModifiers} pendingEvent={activeEvent} />
+
+        {alerts.length > 0 && <AlertList alerts={alerts} onDismiss={dismissAlert} />}
+
+        <GameProgressStrip
+          score={gameStatus.score}
+          stars={gameStatus.stars}
+          turn={gameState.turn}
+          storyBeat={storyBeat}
+          feedback={lastTurnFeedback}
+          initialExpanded={gameState.turn === 1}
+        />
+
         {/* Escenario protagonista: oficina fija mientras se navega el resto */}
         <div className="sticky z-10" style={{ top: headerHeight }}>
           <OfficeScene
@@ -507,15 +512,6 @@ export default function GameDashboard({
         <div id="decision-deck" className="scroll-mt-28">
           <DecisionDeck gameState={gameState} cooldowns={cooldowns} onAction={handleAction} />
         </div>
-
-        <GameProgressStrip
-          score={gameStatus.score}
-          stars={gameStatus.stars}
-          turn={gameState.turn}
-          storyBeat={storyBeat}
-          feedback={lastTurnFeedback}
-          initialExpanded={gameState.turn === 1}
-        />
 
 
 
@@ -553,73 +549,6 @@ export default function GameDashboard({
 
 
 
-        {activeEvent && (
-
-          <Alert className="bg-destructive/10 border-destructive/30">
-
-            <AlertTriangle className="h-5 w-5 text-destructive" />
-
-            <AlertDescription className="font-semibold text-base text-destructive">
-
-              {activeEvent.name}: {activeEvent.description}
-
-            </AlertDescription>
-
-          </Alert>
-
-        )}
-
-
-
-        {alerts.length > 0 && (
-          <div className="relative pb-1">
-            {alerts.length > 1 && (
-              <>
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-3 top-2 h-[calc(100%-0.25rem)] rounded-lg border border-amber-200/70 bg-amber-100/70"
-                />
-                <div
-                  aria-hidden
-                  className="pointer-events-none absolute inset-x-1.5 top-1 h-[calc(100%-0.125rem)] rounded-lg border border-amber-200/50 bg-amber-100/50"
-                />
-              </>
-            )}
-
-            <Alert className="relative z-10 flex items-center gap-3 border-amber-200 bg-amber-50 py-3 animate-in fade-in slide-in-from-top-2">
-              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-
-              <div className="min-w-0 flex-1">
-                {alerts.length > 1 && (
-                  <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-amber-700">
-                    Alerta 1 de {alerts.length}
-                  </p>
-                )}
-                <AlertDescription className="text-sm font-medium leading-snug text-amber-900">
-                  {alerts[0]}
-                </AlertDescription>
-              </div>
-
-              <button
-                type="button"
-                onClick={dismissAlert}
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-amber-600 transition-colors hover:bg-amber-100 hover:text-amber-900"
-                aria-label="Descartar alerta"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </Alert>
-
-            {alerts.length > 1 && (
-              <p className="relative z-10 mt-2 text-center text-xs font-medium text-amber-800/80">
-                {alerts.length - 1} alerta{alerts.length - 1 === 1 ? "" : "s"} más en cola
-              </p>
-            )}
-          </div>
-        )}
-
-
-
         {/* Contenido de apoyo: no compite con la oficina ni el deck */}
 
         <Tabs
@@ -636,7 +565,7 @@ export default function GameDashboard({
 
             <TabsTrigger value="portafolio" className="text-sm font-medium">
 
-              Portafolio
+              Frentes
 
             </TabsTrigger>
 

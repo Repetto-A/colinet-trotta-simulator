@@ -7,6 +7,7 @@ import {
 import {
   INITIATIVE_ASSIGNMENT_COST,
   INITIATIVE_PAYOUT_RATE,
+  MAX_TURNS,
   TACTICAL_TUNE_COST,
 } from "@/lib/game-balance"
 import { calculateRotationEffect, INITIATIVES, SEASONS, type InitiativeType, type Season } from "@/types/initiatives"
@@ -15,9 +16,8 @@ import {
   type ActiveEventModifier,
   type BusinessGameState,
 } from "@/types/business-game"
-import type { EnvironmentalEvent, EventType } from "@/types/events"
+import { generateRandomEvent, getEventPolarity, type EnvironmentalEvent } from "@/types/events"
 import type { ScenarioId } from "@/types/scenario"
-import { generateRandomEvent } from "@/types/events"
 
 export type CooldownState = Record<string, number>
 
@@ -64,7 +64,7 @@ const actionCooldowns: Record<string, number> = {
   train_team: 2,
   delegate_fronts: 2,
   situational_leadership: 1,
-  tune: 0,
+  tune: 1,
 }
 
 const coreMetricIds = [
@@ -106,10 +106,10 @@ export function getActionCooldown(actionId: string) {
 
 function calculateLoadDecay(state: BusinessGameState) {
   const activeSlots = state.initiativeSlots.filter((slot) => slot.type !== "fallow").length
-  const load = activeSlots * 0.4 + (state.executionSpeed < 45 ? 0.8 : 0)
+  const load = activeSlots * 0.45 + (state.executionSpeed < 45 ? 0.9 : 0) + (state.processControl < 45 ? 0.6 : 0)
   let processControl = Math.round(0.8 + load)
   let teamCapacity = Math.round(0.7 + load * 0.7)
-  let sustainability = 0.8
+  let sustainability = 1.0
 
   // Entropía de mercado: los clientes se enfrían si no los atendés (poder de clientes / rivalidad).
   // Cuesta más sostener satisfacción alta que media (rendimientos decrecientes).
@@ -199,7 +199,11 @@ export function tickActiveModifiers(state: BusinessGameState): { state: Business
     next = applyEffectChunk(next, modifier.effectsPerTurn)
 
     if (modifier.turnsLeft <= 1) {
-      alerts.push(`El incidente "${modifier.eventName}" dejó de condicionar el ciclo.`)
+      alerts.push(
+        modifier.polarity === "fortune"
+          ? `Se cerró la ventana favorable de "${modifier.eventName}".`
+          : `El efecto de "${modifier.eventName}" dejó de condicionar el ciclo.`,
+      )
       continue
     }
 
@@ -402,6 +406,7 @@ export function resolveEventImpact(
         eventId: event.id,
         eventName: event.name,
         eventType: event.type,
+        polarity: getEventPolarity(event),
         turnsLeft: event.duration - 1,
         totalTurns: event.duration,
         effectsPerTurn: {
@@ -459,6 +464,9 @@ export function buildThresholdAlerts(state: BusinessGameState): string[] {
   if (state.executionSpeed < 35) {
     alerts.push("La velocidad de ejecución cayó fuerte: hay demasiados frentes para la misma capacidad.")
   }
+  if (state.clientSatisfaction < 40) {
+    alerts.push("Clientes en riesgo: priorizá calidad percibida y promesas cumplidas antes de abrir más frentes.")
+  }
   if (state.sustainability < 45) {
     alerts.push("La confianza de mercado está en riesgo: seguridad, cumplimiento o narrativa quedaron débiles.")
   }
@@ -467,6 +475,9 @@ export function buildThresholdAlerts(state: BusinessGameState): string[] {
   }
   if (state.teamCapacity < 35) {
     alerts.push("El equipo está saturado: si seguís sumando iniciativas, aparece desgaste y retrabajo.")
+  }
+  if (state.turn >= MAX_TURNS - 2) {
+    alerts.push("Cierre inminente: quedan pocos turnos para alcanzar el umbral del comité.")
   }
 
   for (const modifier of state.activeModifiers) {
@@ -526,7 +537,7 @@ export function executeStrategicTurn({
   scenarioId: ScenarioId | null
   risk: string
 }): TurnPipelineResult | null {
-  if (action.id !== "tune" && ((cooldowns[action.id] || 0) > 0 || action.cost > previousState.money)) {
+  if ((cooldowns[action.id] || 0) > 0 || action.cost > previousState.money) {
     return null
   }
 
@@ -538,19 +549,26 @@ export function executeStrategicTurn({
   const advanced = advanceTurn({ state: afterAction, currentSeason, incrementTurn: false })
   const nextCooldowns = {
     ...updateCooldowns(cooldowns),
-    ...(action.id !== "tune" ? { [action.id]: getActionCooldown(action.id) } : {}),
+    [action.id]: getActionCooldown(action.id),
   }
 
   const pendingEvent =
-    scenarioId && Math.random() <= 0.34
+    scenarioId && Math.random() <= 0.58
       ? generateRandomEvent(scenarioId, advanced.currentSeason, previousState.recentEventTypes, advanced.state)
       : null
 
   const alerts = [
     ...buildThresholdAlerts(advanced.state),
     ...advanced.initiativeCompletions,
+    ...(pendingEvent
+      ? [
+          getEventPolarity(pendingEvent) === "fortune"
+            ? `Giro favorable: sacá la carta del ciclo.`
+            : `Imprevisto del ciclo: sacá la carta y decidí cómo responder.`,
+        ]
+      : []),
     ...(advanced.state.activeModifiers.length > previousState.activeModifiers.length
-      ? [`Nuevo incidente en curso: revisá el impacto acumulado.`]
+      ? [`Un giro del ciclo sigue activo en los próximos turnos.`]
       : []),
   ]
 

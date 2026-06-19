@@ -56,7 +56,7 @@ export default function ResultsScreen({
               isDefeat ? "text-red-600" : "text-emerald-700"
             }`}
           >
-            {isDefeat ? "Derrota" : "Victoria"}
+            {isDefeat ? "Ciclo no superado" : "Ciclo superado"}
           </p>
           <h1
             className={`text-4xl md:text-5xl font-bold text-balance ${
@@ -94,19 +94,19 @@ export default function ResultsScreen({
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Meta de victoria</p>
+              <p className="text-sm text-muted-foreground">Meta mínima</p>
               <p className="text-4xl font-bold text-slate-700">{SCORE_VICTORY}</p>
             </div>
           </div>
           <p className="text-base leading-relaxed text-slate-700">{cycleResult.detail}</p>
-          <p className="text-xs text-muted-foreground">Presupuesto inicial del ciclo: ${initialBudget}</p>
+          <p className="text-xs text-muted-foreground">Presupuesto inicial: ${initialBudget}</p>
         </Card>
 
         {frameworkGroups.length > 0 && (
           <Card className="border-violet-200 bg-violet-50/40 p-6 space-y-4">
             <div className="flex items-center gap-2">
               <BookOpen className="h-5 w-5 text-violet-700" />
-              <h2 className="text-lg font-semibold text-violet-950">Qué aprendiste</h2>
+              <h2 className="text-lg font-semibold text-violet-950">Aprendizajes del ciclo</h2>
             </div>
             <div className="space-y-4">
               {frameworkGroups.map((group) => (
@@ -128,7 +128,7 @@ export default function ResultsScreen({
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" onClick={onPlayAgain} className="px-8">
-            Jugar otro ciclo
+            Jugar otro escenario
           </Button>
           <Button size="lg" variant="outline" onClick={onBackToHome} className="px-8 bg-transparent">
             Volver al inicio

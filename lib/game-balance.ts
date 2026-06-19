@@ -8,8 +8,15 @@ export const MAX_TURNS = 12
 /** Economía — 630 vs 640: dos palancas nuevas (~$50) en people/estrategia; caja inicial un poco más ajustada */
 export const STARTING_BUDGET = 630
 export const INITIATIVE_ASSIGNMENT_COST = 25
-export const TACTICAL_TUNE_COST = 24
+export const TACTICAL_TUNE_COST = 28
 export const INITIATIVE_PAYOUT_RATE = 0.085
+
+/** Etiqueta cualitativa para decisiones del comité (evita ruido de $ en cada carta). */
+export function formatDecisionCostTier(cost: number): string {
+  if (cost <= 22) return "inversión ligera"
+  if (cost <= 38) return "inversión media"
+  return "inversión alta"
+}
 
 /** Puntuación para cerrar ciclo */
 export const SCORE_DEFEAT = 44
@@ -56,15 +63,45 @@ const outcomeHeadlines: Record<CycleOutcome, string> = {
 export function calculateCycleScore(state: BusinessGameState, startingBudget = STARTING_BUDGET): number {
   const budgetRatio = Math.min(100, Math.round((state.money / startingBudget) * 100))
   const missionBonus = Math.min(12, state.initiativesCompleted * 4)
+  const weakestCoreMetric = Math.min(
+    state.clientSatisfaction,
+    state.processControl,
+    state.teamCapacity,
+    state.executionSpeed,
+  )
+  const weakSpotPenalty = weakestCoreMetric < 35 ? Math.round((35 - weakestCoreMetric) * 0.28) : 0
+  const imbalancePenalty =
+    Math.max(
+      state.clientSatisfaction,
+      state.processControl,
+      state.teamCapacity,
+      state.executionSpeed,
+      state.sustainability,
+    ) -
+      Math.min(
+        state.clientSatisfaction,
+        state.processControl,
+        state.teamCapacity,
+        state.executionSpeed,
+        state.sustainability,
+      ) >
+    38
+      ? 3
+      : 0
 
-  return Math.round(
+  return Math.max(
+    0,
+    Math.round(
     state.clientSatisfaction * 0.24 +
       state.processControl * 0.2 +
       state.sustainability * 0.16 +
       state.teamCapacity * 0.14 +
       state.executionSpeed * 0.1 +
       budgetRatio * 0.06 +
-      missionBonus,
+        missionBonus -
+        weakSpotPenalty -
+        imbalancePenalty,
+    ),
   )
 }
 

@@ -11,7 +11,7 @@
   --card-foreground: oklch(0.25 0.02 60);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.25 0.02 60);
-  --primary: oklch(0.55 0.15 140);
+  --primary: oklch(0.56 0.17 256);
   --primary-foreground: oklch(1 0 0);
   --secondary: oklch(0.65 0.12 85);
   --secondary-foreground: oklch(0.25 0.02 60);
@@ -23,8 +23,8 @@
   --destructive-foreground: oklch(1 0 0);
   --border: oklch(0.88 0.01 85);
   --input: oklch(0.95 0.01 85);
-  --ring: oklch(0.55 0.15 140);
-  --chart-1: oklch(0.55 0.15 140);
+  --ring: oklch(0.56 0.17 256);
+  --chart-1: oklch(0.56 0.17 256);
   --chart-2: oklch(0.6 0.18 200);
   --chart-3: oklch(0.65 0.12 85);
   --chart-4: oklch(0.6 0.15 50);
@@ -32,12 +32,12 @@
   --radius: 1rem;
   --sidebar: oklch(0.98 0.01 85);
   --sidebar-foreground: oklch(0.25 0.02 60);
-  --sidebar-primary: oklch(0.55 0.15 140);
+  --sidebar-primary: oklch(0.56 0.17 256);
   --sidebar-primary-foreground: oklch(1 0 0);
   --sidebar-accent: oklch(0.95 0.01 85);
   --sidebar-accent-foreground: oklch(0.25 0.02 60);
   --sidebar-border: oklch(0.88 0.01 85);
-  --sidebar-ring: oklch(0.55 0.15 140);
+  --sidebar-ring: oklch(0.56 0.17 256);
 
 }
 
@@ -48,7 +48,7 @@
   --card-foreground: oklch(0.95 0.01 85);
   --popover: oklch(0.25 0.02 60);
   --popover-foreground: oklch(0.95 0.01 85);
-  --primary: oklch(0.6 0.15 140);
+  --primary: oklch(0.63 0.18 256);
   --primary-foreground: oklch(0.15 0.02 60);
   --secondary: oklch(0.35 0.02 60);
   --secondary-foreground: oklch(0.95 0.01 85);
@@ -60,20 +60,20 @@
   --destructive-foreground: oklch(0.95 0.01 85);
   --border: oklch(0.35 0.02 60);
   --input: oklch(0.3 0.02 60);
-  --ring: oklch(0.6 0.15 140);
-  --chart-1: oklch(0.6 0.15 140);
+  --ring: oklch(0.63 0.18 256);
+  --chart-1: oklch(0.63 0.18 256);
   --chart-2: oklch(0.65 0.18 200);
   --chart-3: oklch(0.7 0.12 85);
   --chart-4: oklch(0.65 0.15 50);
   --chart-5: oklch(0.55 0.1 30);
   --sidebar: oklch(0.22 0.02 60);
   --sidebar-foreground: oklch(0.95 0.01 85);
-  --sidebar-primary: oklch(0.6 0.15 140);
+  --sidebar-primary: oklch(0.63 0.18 256);
   --sidebar-primary-foreground: oklch(0.15 0.02 60);
   --sidebar-accent: oklch(0.3 0.02 60);
   --sidebar-accent-foreground: oklch(0.95 0.01 85);
   --sidebar-border: oklch(0.35 0.02 60);
-  --sidebar-ring: oklch(0.6 0.15 140);
+  --sidebar-ring: oklch(0.63 0.18 256);
 
 }
 
@@ -183,6 +183,21 @@
   50% { opacity: 1; }
 }
 
+@keyframes office-kpi-bump {
+  0%, 100% { transform: translateY(0) scale(1); }
+  35% { transform: translateY(-2px) scale(1.015); }
+}
+
+@keyframes office-kpi-led {
+  0%, 100% { opacity: 0.45; filter: drop-shadow(0 0 0 rgba(37, 99, 235, 0)); }
+  50% { opacity: 1; filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.5)); }
+}
+
+@keyframes office-kpi-strip-react {
+  0%, 100% { background-color: rgba(255, 255, 255, 0.9); }
+  35% { background-color: rgba(219, 234, 254, 0.95); }
+}
+
 .office-anim-breathe,
 .office-anim-type,
 .office-anim-bob,
@@ -207,25 +222,25 @@
 
 @keyframes office-decision-pulse {
   0% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.45);
-    border-color: rgba(99, 102, 241, 0.6);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.35);
+    border-color: rgba(37, 99, 235, 0.45);
   }
   70% {
-    box-shadow: 0 0 0 10px rgba(99, 102, 241, 0);
+    box-shadow: 0 0 0 10px rgba(37, 99, 235, 0);
     border-color: rgba(148, 163, 184, 0.5);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
   }
 }
 
 @keyframes kpi-highlight-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+    box-shadow: 0 0 0 0 rgba(37, 99, 235, 0);
   }
   40% {
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.25);
   }
 }
 
@@ -235,6 +250,18 @@
 
 .kpi-highlight-pulse {
   animation: kpi-highlight-pulse 0.8s ease-in-out 2;
+}
+
+.office-anim-kpi-bump {
+  animation: office-kpi-bump 0.55s ease-out;
+}
+
+.office-anim-kpi-led {
+  animation: office-kpi-led 0.65s ease-out;
+}
+
+.office-kpi-strip-react {
+  animation: office-kpi-strip-react 0.75s ease-out;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -250,6 +277,12 @@
   .office-anim-smoke,
   .office-anim-screen,
   .office-anim-led {
+    animation: none;
+  }
+
+  .office-anim-kpi-bump,
+  .office-anim-kpi-led,
+  .office-kpi-strip-react {
     animation: none;
   }
 }

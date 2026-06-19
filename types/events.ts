@@ -2,7 +2,7 @@ import type { ScenarioId } from "./scenario"
 import type { Season } from "./initiatives"
 import type { BusinessGameState } from "./business-game"
 
-export type EventType =
+export type SetbackEventType =
   | "client_escalation"
   | "regulatory_change"
   | "security_audit"
@@ -15,11 +15,23 @@ export type EventType =
   | "salary_parity"
   | "training_gap"
 
+export type FortuneEventType =
+  | "client_renewal"
+  | "talent_referral"
+  | "efficiency_breakthrough"
+  | "subsidy_grant"
+  | "partnership_win"
+
+export type EventType = SetbackEventType | FortuneEventType
+
+export type EventPolarity = "fortune" | "setback"
+
 export interface EnvironmentalEvent {
   id: string
   type: EventType
   name: string
   description: string
+  polarity?: EventPolarity
   severity: "low" | "medium" | "high" | "critical"
   effects: {
     clientSatisfactionChange?: number
@@ -113,7 +125,7 @@ export const EVENT_PROBABILITIES: EventProbability[] = [
   },
 ]
 
-export const EVENTS: Record<EventType, Record<string, EnvironmentalEvent>> = {
+export const EVENTS: Record<SetbackEventType, Record<string, EnvironmentalEvent>> = {
   client_escalation: {
     light: {
       id: "client-escalation-light",
@@ -544,41 +556,239 @@ export const EVENTS: Record<EventType, Record<string, EnvironmentalEvent>> = {
   },
 }
 
-export function generateRandomEvent(
-  scenario: ScenarioId,
-  season: Season,
-  recentEventTypes: EventType[] = [],
-  state?: BusinessGameState,
-): EnvironmentalEvent | null {
-  const applicableEvents = EVENT_PROBABILITIES.filter(
-    (eventProbability) =>
-      eventProbability.scenarios.includes(scenario) &&
-      eventProbability.seasons.includes(season) &&
-      !recentEventTypes.slice(-2).includes(eventProbability.eventType),
-  )
+export const FORTUNE_EVENT_PROBABILITIES: EventProbability[] = [
+  {
+    eventType: "client_renewal",
+    probability: 0.34,
+    seasons: ["spring", "summer", "autumn", "winter"],
+    scenarios: ["core_pressure", "portfolio_expansion", "governance_compliance"],
+  },
+  {
+    eventType: "talent_referral",
+    probability: 0.28,
+    seasons: ["spring", "summer", "autumn"],
+    scenarios: ["ai_innovation", "regional_structure", "core_pressure"],
+  },
+  {
+    eventType: "efficiency_breakthrough",
+    probability: 0.3,
+    seasons: ["summer", "autumn", "winter"],
+    scenarios: ["core_pressure", "governance_compliance", "portfolio_expansion"],
+  },
+  {
+    eventType: "subsidy_grant",
+    probability: 0.22,
+    seasons: ["spring", "autumn", "winter"],
+    scenarios: ["governance_compliance", "regional_structure", "ai_innovation"],
+  },
+  {
+    eventType: "partnership_win",
+    probability: 0.26,
+    seasons: ["spring", "summer", "autumn"],
+    scenarios: ["regional_structure", "portfolio_expansion", "ai_innovation"],
+  },
+]
 
-  if (applicableEvents.length === 0) return null
+export const FORTUNE_EVENTS: Record<FortuneEventType, Record<string, EnvironmentalEvent>> = {
+  client_renewal: {
+    light: {
+      id: "client-renewal-light",
+      type: "client_renewal",
+      polarity: "fortune",
+      name: "Renovación sin fricción",
+      description: "Un cliente clave renueva antes de lo previsto y elogia la respuesta del equipo.",
+      severity: "low",
+      effects: { clientSatisfactionChange: 8, moneyChange: 35 },
+      canMitigate: false,
+      duration: 1,
+      learningConcept: "Poder de clientes: cuando la confianza sube, el comercial deja de pelear cada release.",
+    },
+    moderate: {
+      id: "client-renewal-moderate",
+      type: "client_renewal",
+      polarity: "fortune",
+      name: "Cuenta enterprise ampliada",
+      description: "Una aseguradora suma usuarios y abre espacio para upsell sin presionar plazos imposibles.",
+      severity: "medium",
+      effects: { clientSatisfactionChange: 14, executionSpeedChange: 6, moneyChange: 80 },
+      canMitigate: false,
+      duration: 2,
+      learningConcept: "Retención: convertir estabilidad en expansión comercial.",
+    },
+    severe: {
+      id: "client-renewal-severe",
+      type: "client_renewal",
+      polarity: "fortune",
+      name: "Referencia pública del sector",
+      description: "Un cliente enterprise recomienda GAUS mp en el mercado. Llegan consultas nuevas.",
+      severity: "high",
+      effects: { clientSatisfactionChange: 20, sustainabilityChange: 12, moneyChange: 140 },
+      canMitigate: false,
+      duration: 2,
+      learningConcept: "Confianza de mercado: la señal externa valida la estrategia interna.",
+    },
+  },
+  talent_referral: {
+    light: {
+      id: "talent-referral-light",
+      type: "talent_referral",
+      polarity: "fortune",
+      name: "Llegada de refuerzo",
+      description: "Un referido senior se suma con onboarding rápido y buen encaje cultural.",
+      severity: "low",
+      effects: { teamCapacityChange: 8, executionSpeedChange: 4 },
+      canMitigate: false,
+      duration: 1,
+      learningConcept: "Herzberg: atraer talento también depende de cómo está diseñado el puesto.",
+    },
+    moderate: {
+      id: "talent-referral-moderate",
+      type: "talent_referral",
+      polarity: "fortune",
+      name: "Equipo técnico reforzado",
+      description: "Dos perfiles clave cierran en la misma semana y despejan un cuello de botella.",
+      severity: "medium",
+      effects: { teamCapacityChange: 14, executionSpeedChange: 8, processControlChange: 4 },
+      canMitigate: false,
+      duration: 2,
+    },
+    severe: {
+      id: "talent-referral-severe",
+      type: "talent_referral",
+      polarity: "fortune",
+      name: "Talento que multiplica al equipo",
+      description: "Un líder técnico trae prácticas que elevan la capacidad de todo el squad.",
+      severity: "high",
+      effects: { teamCapacityChange: 18, executionSpeedChange: 10, sustainabilityChange: 8 },
+      canMitigate: false,
+      duration: 2,
+      learningConcept: "Capacidad organizacional: una pieza bien ubicada mueve varios KPIs a la vez.",
+    },
+  },
+  efficiency_breakthrough: {
+    light: {
+      id: "efficiency-light",
+      type: "efficiency_breakthrough",
+      polarity: "fortune",
+      name: "Quick win operativo",
+      description: "El equipo elimina retrabajo en un flujo crítico sin proyecto largo.",
+      severity: "low",
+      effects: { executionSpeedChange: 10, processControlChange: 4 },
+      canMitigate: false,
+      duration: 1,
+    },
+    moderate: {
+      id: "efficiency-moderate",
+      type: "efficiency_breakthrough",
+      polarity: "fortune",
+      name: "Automatización que libera capacidad",
+      description: "Una mejora de proceso devuelve horas al equipo cada semana.",
+      severity: "medium",
+      effects: { executionSpeedChange: 16, teamCapacityChange: 8, processControlChange: 6 },
+      canMitigate: false,
+      duration: 2,
+    },
+    severe: {
+      id: "efficiency-severe",
+      type: "efficiency_breakthrough",
+      polarity: "fortune",
+      name: "Salto de productividad",
+      description: "Varias áreas alinean criterios y el sistema entrega más con la misma gente.",
+      severity: "high",
+      effects: { executionSpeedChange: 22, teamCapacityChange: 12, clientSatisfactionChange: 6 },
+      canMitigate: false,
+      duration: 2,
+      learningConcept: "Ejecución: la eficiencia real viene de foco y diseño, no de más horas.",
+    },
+  },
+  subsidy_grant: {
+    light: {
+      id: "subsidy-light",
+      type: "subsidy_grant",
+      polarity: "fortune",
+      name: "Incentivo a la innovación",
+      description: "Un programa sectorial reconoce inversiones en modernización y devuelve parte del gasto.",
+      severity: "low",
+      effects: { moneyChange: 55, sustainabilityChange: 4 },
+      canMitigate: false,
+      duration: 1,
+    },
+    moderate: {
+      id: "subsidy-moderate",
+      type: "subsidy_grant",
+      polarity: "fortune",
+      name: "Subsidio aprobado",
+      description: "La empresa accede a fondos para seguridad o modernización sin diluir el roadmap.",
+      severity: "medium",
+      effects: { moneyChange: 110, processControlChange: 6, sustainabilityChange: 6 },
+      canMitigate: false,
+      duration: 1,
+    },
+    severe: {
+      id: "subsidy-severe",
+      type: "subsidy_grant",
+      polarity: "fortune",
+      name: "Financiamiento estratégico",
+      description: "Un programa público-privado cofinancia un frente clave del ecosistema GAUS.",
+      severity: "high",
+      effects: { moneyChange: 180, processControlChange: 10, executionSpeedChange: 8 },
+      canMitigate: false,
+      duration: 1,
+    },
+  },
+  partnership_win: {
+    light: {
+      id: "partnership-light",
+      type: "partnership_win",
+      polarity: "fortune",
+      name: "Acuerdo comercial menor",
+      description: "ITware o un canal aliado abre una puerta regional sin consumir todo el comité.",
+      severity: "low",
+      effects: { clientSatisfactionChange: 6, sustainabilityChange: 6, moneyChange: 40 },
+      canMitigate: false,
+      duration: 1,
+    },
+    moderate: {
+      id: "partnership-moderate",
+      type: "partnership_win",
+      polarity: "fortune",
+      name: "Alianza que acelera go-to-market",
+      description: "Un socio integrador trae pipeline calificado y reduce fricción comercial.",
+      severity: "medium",
+      effects: { clientSatisfactionChange: 10, executionSpeedChange: 8, moneyChange: 70 },
+      canMitigate: false,
+      duration: 2,
+      learningConcept: "Ansoff: crecer con socios puede ser más rápido que abrir frentes propios.",
+    },
+    severe: {
+      id: "partnership-severe",
+      type: "partnership_win",
+      polarity: "fortune",
+      name: "Socio estratégico ancla",
+      description: "Un acuerdo regional valida el ecosistema y trae visibilidad en el sector.",
+      severity: "high",
+      effects: { clientSatisfactionChange: 14, sustainabilityChange: 14, executionSpeedChange: 6, moneyChange: 120 },
+      canMitigate: false,
+      duration: 2,
+    },
+  },
+}
 
-  let gate = 0.32
-  if (state) {
-    if (state.clientSatisfaction < 40 || state.processControl < 40 || state.teamCapacity < 40) gate = 0.48
-    if (state.activeModifiers.length > 0) gate = 0.22
-  }
-  if (Math.random() > gate) return null
+export function getEventPolarity(event: EnvironmentalEvent): EventPolarity {
+  if (event.polarity) return event.polarity
+  return "setback"
+}
 
-  const weighted = applicableEvents.map((entry) => {
+function pickWeightedEvent(
+  pool: EventProbability[],
+  state: BusinessGameState | undefined,
+  weightAdjust?: (entry: EventProbability, state: BusinessGameState | undefined) => number,
+): EventProbability {
+  const weighted = pool.map((entry) => {
     let weight = entry.probability
-    if (state) {
-      if (entry.eventType === "client_escalation" && state.clientSatisfaction < 50) weight += 0.12
-      if (entry.eventType === "talent_churn" && state.teamCapacity < 45) weight += 0.1
-      if (entry.eventType === "security_audit" && state.sustainability < 50) weight += 0.1
-      if (entry.eventType === "fx_gap" && state.money < 200) weight += 0.12
-      if (entry.eventType === "salary_parity" && state.teamCapacity < 50) weight += 0.1
-      if (entry.eventType === "training_gap" && state.executionSpeed > 60) weight += 0.1
-    }
-    return { entry, weight }
+    if (weightAdjust) weight += weightAdjust(entry, state)
+    return { entry, weight: Math.max(0.05, weight) }
   })
-
   const totalWeight = weighted.reduce((sum, item) => sum + item.weight, 0)
   let roll = Math.random() * totalWeight
   let selectedEvent = weighted[0].entry
@@ -589,17 +799,72 @@ export function generateRandomEvent(
       break
     }
   }
+  return selectedEvent
+}
 
+function rollSeverity(): "light" | "moderate" | "severe" {
   const severityRoll = Math.random()
-  let severity: "light" | "moderate" | "severe"
+  if (severityRoll < 0.55) return "light"
+  if (severityRoll < 0.88) return "moderate"
+  return "severe"
+}
 
-  if (severityRoll < 0.6) {
-    severity = "light"
-  } else if (severityRoll < 0.9) {
-    severity = "moderate"
-  } else {
-    severity = "severe"
+export function generateRandomEvent(
+  scenario: ScenarioId,
+  season: Season,
+  recentEventTypes: EventType[] = [],
+  state?: BusinessGameState,
+): EnvironmentalEvent | null {
+  const setbackPool = EVENT_PROBABILITIES.filter(
+    (entry) =>
+      entry.scenarios.includes(scenario) &&
+      entry.seasons.includes(season) &&
+      !recentEventTypes.slice(-2).includes(entry.eventType),
+  )
+  const fortunePool = FORTUNE_EVENT_PROBABILITIES.filter(
+    (entry) =>
+      entry.scenarios.includes(scenario) &&
+      entry.seasons.includes(season) &&
+      !recentEventTypes.slice(-2).includes(entry.eventType),
+  )
+
+  if (setbackPool.length === 0 && fortunePool.length === 0) return null
+
+  let gate = 0.48
+  if (state) {
+    if (state.clientSatisfaction < 40 || state.processControl < 40 || state.teamCapacity < 40) gate = 0.58
+    if (state.activeModifiers.length > 0) gate = 0.34
+    if (state.clientSatisfaction >= 70 && state.teamCapacity >= 65) gate = 0.52
+  }
+  if (Math.random() > gate) return null
+
+  const rollFortune = fortunePool.length > 0 && (setbackPool.length === 0 || Math.random() < 0.4)
+
+  if (rollFortune) {
+    const selected = pickWeightedEvent(fortunePool, state, (entry, gameState) => {
+      let bonus = 0
+      if (!gameState) return bonus
+      if (entry.eventType === "client_renewal" && gameState.clientSatisfaction >= 55) bonus += 0.1
+      if (entry.eventType === "talent_referral" && gameState.teamCapacity >= 50) bonus += 0.08
+      if (entry.eventType === "efficiency_breakthrough" && gameState.executionSpeed >= 55) bonus += 0.1
+      if (entry.eventType === "subsidy_grant" && gameState.processControl >= 55) bonus += 0.08
+      if (entry.eventType === "partnership_win" && gameState.sustainability >= 50) bonus += 0.08
+      return bonus
+    })
+    return FORTUNE_EVENTS[selected.eventType as FortuneEventType][rollSeverity()]
   }
 
-  return EVENTS[selectedEvent.eventType][severity]
+  const selected = pickWeightedEvent(setbackPool, state, (entry, gameState) => {
+    let bonus = 0
+    if (!gameState) return bonus
+    if (entry.eventType === "client_escalation" && gameState.clientSatisfaction < 50) bonus += 0.12
+    if (entry.eventType === "talent_churn" && gameState.teamCapacity < 45) bonus += 0.1
+    if (entry.eventType === "security_audit" && gameState.sustainability < 50) bonus += 0.1
+    if (entry.eventType === "fx_gap" && gameState.money < 200) bonus += 0.12
+    if (entry.eventType === "salary_parity" && gameState.teamCapacity < 50) bonus += 0.1
+    if (entry.eventType === "training_gap" && gameState.executionSpeed > 60) bonus += 0.1
+    return bonus
+  })
+
+  return EVENTS[selected.eventType as SetbackEventType][rollSeverity()]
 }

@@ -43,7 +43,7 @@ export default function StrategicHeader({
             <div className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground sm:text-sm">
               <span>Turno {turn}/{CYCLE_TURNS}</span>
               <span>·</span>
-              <span className="font-semibold text-indigo-700">{score} pts</span>
+              <span className="font-semibold text-blue-700">{score} pts</span>
               <span>·</span>
               <span className="truncate">{scenarioName}</span>
               <span>·</span>
@@ -59,8 +59,8 @@ export default function StrategicHeader({
         </div>
 
         <div className="space-y-2 lg:min-w-[360px]">
-          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-600" style={{ width: `${chapterProgress}%` }} />
+          <div className="h-2 overflow-hidden rounded-full bg-blue-50">
+            <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-blue-700" style={{ width: `${chapterProgress}%` }} />
           </div>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={onOpenSignals} className="min-h-11 gap-2 bg-white">

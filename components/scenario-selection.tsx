@@ -87,26 +87,19 @@ function ScenarioCard({
           </div>
         </div>
 
-        <p className="min-h-[4.5rem] text-sm leading-relaxed text-slate-600 line-clamp-3">{scenario.description}</p>
+        <p className="min-h-[4.5rem] text-sm leading-relaxed text-slate-600">{scenario.description}</p>
+        <p className="mt-2 min-h-[4.5rem] rounded-lg border border-slate-200/80 bg-slate-50/70 px-3 py-2 text-xs leading-relaxed text-slate-700">
+          {scenario.openingHook}
+        </p>
 
-        <div className="mt-auto min-h-[4.5rem] pt-4">
-          <div className="flex min-h-[2.25rem] flex-wrap content-start gap-1.5">
-            {scenario.learningFocus.map((focus) => (
-              <span
-                key={focus}
-                className="rounded-full bg-violet-100 px-2.5 py-1 text-xs font-medium text-violet-800"
-              >
-                {focus}
-              </span>
-            ))}
-          </div>
+        <div className="mt-auto min-h-[3.5rem] pt-4">
           <p
             className={cn(
               "mt-2 flex items-center gap-1 text-xs font-medium text-slate-400 transition-opacity",
               selected ? "text-sky-700 opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100",
             )}
           >
-            {selected ? "Listo para comenzar abajo" : "Seleccionar"}
+            {selected ? "Mandato listo para iniciar" : "Elegir mandato"}
             <ArrowRight className="h-3.5 w-3.5" />
           </p>
         </div>
@@ -145,7 +138,7 @@ function ScenarioStartDock({
             className="min-h-11 shrink-0 gap-2 rounded-xl px-4 font-semibold sm:px-6"
             style={{ backgroundColor: scenario.accent }}
           >
-            <span className="hidden sm:inline">Asumir el comité</span>
+            <span className="hidden sm:inline">Iniciar ciclo</span>
             <span className="sm:hidden">Comenzar</span>
             <ArrowRight className="h-4 w-4" />
           </Button>
@@ -174,10 +167,10 @@ export default function ScenarioSelection({ onSelectScenario }: ScenarioSelectio
           <div className="relative">
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-sky-700">Paso 2 · Mandato</p>
             <h1 className="mt-2 text-2xl font-bold tracking-tight text-slate-950 sm:text-3xl">
-              ¿Qué conflicto vas a encarar?
+              Elegí el conflicto principal
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-600 sm:text-base">
-              Cada escenario tensiona otra palanca. Elegí uno y liderá el comité por 12 turnos.
+              Cada escenario abre un frente distinto. Revisá el contexto y liderá 12 turnos.
             </p>
           </div>
         </header>

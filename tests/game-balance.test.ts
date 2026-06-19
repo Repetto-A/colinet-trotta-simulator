@@ -78,4 +78,19 @@ describe("game balance", () => {
     expect(status.outcome).toBe("defeat_score")
     expect(status.stars).toBe(0)
   })
+
+  it("penalizes fragile and imbalanced KPI profiles", () => {
+    const fragile = createScenarioState("core_pressure")
+    fragile.turn = 10
+    fragile.money = 500
+    fragile.clientSatisfaction = 70
+    fragile.processControl = 70
+    fragile.sustainability = 70
+    fragile.teamCapacity = 70
+    fragile.executionSpeed = 25
+
+    const recovered = { ...fragile, executionSpeed: 45 }
+
+    expect(calculateCycleScore(fragile)).toBeLessThan(calculateCycleScore(recovered))
+  })
 })

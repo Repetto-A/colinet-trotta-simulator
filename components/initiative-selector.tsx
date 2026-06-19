@@ -60,8 +60,8 @@ export default function InitiativeSelector({ currentSeason, previousInitiative, 
         <div className="sticky top-0 z-10 border-b bg-white p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">Capacidad estratégica</p>
-              <h2 className="text-xl font-bold text-slate-950">Asignar iniciativa</h2>
+              <p className="text-xs font-semibold uppercase tracking-wide text-sky-700">Frente de trabajo</p>
+              <h2 className="text-xl font-bold text-slate-950">Elegir iniciativa para el equipo</h2>
               <p className="mt-1 text-sm text-slate-600">
                 Fase {SEASONS[currentSeason].name}
                 {previousInitiative && previousInitiative !== "fallow" ? ` · Anterior: ${INITIATIVES[previousInitiative].name}` : ""}

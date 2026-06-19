@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useHorizontalDragScroll } from "@/hooks/use-horizontal-drag-scroll"
 import { BUSINESS_ACTIONS, type BusinessActionDefinition } from "@/lib/business-decisions"
+import { formatDecisionCostTier } from "@/lib/game-balance"
 import { PEOPLE_ACTION_IDS, STRATEGIC_ACTION_IDS } from "@/lib/game-engine"
 import type { BusinessGameState } from "@/types/business-game"
 
@@ -47,16 +48,18 @@ const actionIcons: Record<string, LucideIcon> = {
   situational_leadership: Users,
 }
 
-const categoryAccent: Record<DeckCategory, { label: string; stripe: string; icon: string }> = {
+const categoryAccent: Record<DeckCategory, { label: string; stripe: string; icon: string; badge: string }> = {
   strategy: {
     label: "Estrategia",
-    stripe: "from-sky-500 to-indigo-500",
-    icon: "text-indigo-600",
+    stripe: "from-blue-500 to-blue-700",
+    icon: "text-blue-700",
+    badge: "bg-blue-100 text-blue-700",
   },
   people: {
     label: "Personas",
-    stripe: "from-teal-500 to-emerald-500",
-    icon: "text-teal-600",
+    stripe: "from-blue-400 to-cyan-600",
+    icon: "text-cyan-700",
+    badge: "bg-cyan-100 text-cyan-700",
   },
 }
 
@@ -66,8 +69,8 @@ const MetricPill = ({ label, value }: { label: string; value: number }) => {
   return (
     <span
       className={cn(
-        "rounded-md px-1.5 py-0.5 text-[10px] font-semibold tabular-nums",
-        positive ? "bg-emerald-500/10 text-emerald-700" : "bg-red-500/10 text-red-700",
+        "rounded-full border px-2 py-0.5 text-[10px] font-semibold tabular-nums",
+        positive ? "border-blue-200 bg-blue-50 text-blue-700" : "border-rose-200 bg-rose-50 text-rose-700",
       )}
     >
       {label} {positive ? "+" : ""}
@@ -112,7 +115,7 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
     <div className="rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 shadow-sm backdrop-blur-sm sm:p-4">
       <div className="mb-3 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-700 text-white">
             <Lightbulb className="h-4 w-4" />
           </div>
           <div>
@@ -128,7 +131,7 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 shrink-0 rounded-full bg-white"
+            className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-blue-700"
             onClick={() => scrollBy(-300)}
             aria-label="Ver decisiones anteriores"
           >
@@ -138,7 +141,7 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
             type="button"
             variant="outline"
             size="icon"
-            className="h-8 w-8 shrink-0 rounded-full bg-white"
+            className="h-8 w-8 shrink-0 rounded-full border-slate-200 bg-white text-blue-700"
             onClick={() => scrollBy(300)}
             aria-label="Ver más decisiones"
           >
@@ -177,9 +180,9 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
                 key={action.id}
                 className={cn(
                   "relative flex w-[240px] shrink-0 flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-shadow sm:w-[260px]",
-                  disabled && "opacity-55",
+                  disabled && "opacity-65 saturate-50",
                   recommended
-                    ? "border-indigo-300 shadow-md ring-1 ring-indigo-200"
+                    ? "border-blue-300 shadow-md ring-1 ring-blue-200"
                     : "border-slate-200 hover:border-slate-300 hover:shadow",
                 )}
               >
@@ -191,14 +194,16 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
                       {accent.label}
                     </span>
                     {recommended && (
-                      <span className="rounded-md bg-indigo-600 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                      <span className="rounded-full bg-blue-600 px-2 py-0.5 text-[10px] font-bold text-white">
                         Sugerida
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-start gap-2">
-                    <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", accent.icon)} />
+                    <span className={cn("mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md", accent.badge)}>
+                      <Icon className={cn("h-3.5 w-3.5", accent.icon)} />
+                    </span>
                     <div className="min-w-0">
                       <h3 className="text-sm font-bold leading-snug text-slate-900">{action.title}</h3>
                       <p className="mt-0.5 line-clamp-1 text-[10px] text-slate-500">{action.concept}</p>
@@ -228,8 +233,9 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
                       variant={recommended ? "default" : "outline"}
                       className={cn(
                         "min-h-9 w-full text-sm font-semibold",
-                        recommended && "bg-indigo-600 hover:bg-indigo-700",
-                        category === "people" && recommended && "bg-teal-700 hover:bg-teal-800",
+                        recommended && "bg-blue-600 hover:bg-blue-700",
+                        !recommended && "border-slate-200 text-slate-700 hover:border-blue-200 hover:text-blue-700",
+                        disabled && "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400 hover:border-slate-200 hover:text-slate-400",
                       )}
                     >
                       {cooldown > 0 ? (
@@ -238,9 +244,9 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
                           En {cooldown}t
                         </span>
                       ) : !canAfford ? (
-                        "Sin presupuesto"
+                        "Presupuesto insuficiente"
                       ) : (
-                        <>Ejecutar · ${action.cost}</>
+                        <>Ejecutar · {formatDecisionCostTier(action.cost)}</>
                       )}
                     </Button>
                   </div>

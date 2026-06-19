@@ -20,6 +20,7 @@ export interface ActiveEventModifier {
   eventId: string
   eventName: string
   eventType: EventType
+  polarity?: "fortune" | "setback"
   turnsLeft: number
   totalTurns: number
   effectsPerTurn: {

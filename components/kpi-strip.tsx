@@ -23,15 +23,15 @@ const healthTier = (value: number): HealthTier => {
 }
 
 const valueTone: Record<HealthTier, string> = {
-  good: "text-emerald-700",
-  mid: "text-amber-700",
-  low: "text-red-700",
+  good: "text-blue-700",
+  mid: "text-slate-700",
+  low: "text-rose-700",
 }
 
 const barTone: Record<HealthTier, string> = {
-  good: "bg-emerald-500",
-  mid: "bg-amber-500",
-  low: "bg-red-500",
+  good: "bg-blue-500",
+  mid: "bg-blue-300",
+  low: "bg-rose-500",
 }
 
 interface MetricTheme {
@@ -44,27 +44,27 @@ interface MetricTheme {
 const metricThemes: Record<string, MetricTheme> = {
   Clientes: {
     icon: Heart,
-    iconBg: "bg-rose-100",
-    iconColor: "text-rose-600",
-    barTrack: "bg-rose-100",
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-700",
+    barTrack: "bg-blue-100/70",
   },
   Control: {
     icon: ShieldCheck,
-    iconBg: "bg-indigo-100",
-    iconColor: "text-indigo-600",
-    barTrack: "bg-indigo-100",
+    iconBg: "bg-blue-100",
+    iconColor: "text-blue-700",
+    barTrack: "bg-blue-100/70",
   },
   Capacidad: {
     icon: Users,
-    iconBg: "bg-violet-100",
-    iconColor: "text-violet-600",
-    barTrack: "bg-violet-100",
+    iconBg: "bg-slate-100",
+    iconColor: "text-slate-700",
+    barTrack: "bg-slate-100",
   },
   Velocidad: {
     icon: Radar,
-    iconBg: "bg-sky-100",
-    iconColor: "text-sky-600",
-    barTrack: "bg-sky-100",
+    iconBg: "bg-cyan-100",
+    iconColor: "text-cyan-700",
+    barTrack: "bg-cyan-100/80",
   },
 }
 
@@ -79,8 +79,8 @@ function DeltaBadge({ delta, money = false }: { delta: number; money?: boolean }
     <span
       title="vs. turno previo"
       className={cn(
-        "inline-flex items-center gap-0.5 rounded-md px-1.5 py-0.5 text-[10px] font-bold tabular-nums leading-none",
-        positive ? "bg-emerald-500/10 text-emerald-700" : "bg-red-500/10 text-red-700",
+        "inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums leading-none",
+        positive ? "border-blue-200 bg-blue-50 text-blue-700" : "border-rose-200 bg-rose-50 text-rose-700",
       )}
     >
       {positive ? <TrendingUp className="h-3 w-3 shrink-0" /> : <TrendingDown className="h-3 w-3 shrink-0" />}
@@ -157,8 +157,8 @@ export default function KpiStrip({
               <DeltaBadge delta={moneyDelta} money />
             </div>
           </div>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-900">
-            <Wallet className="h-3.5 w-3.5 text-emerald-300" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-700">
+            <Wallet className="h-3.5 w-3.5 text-blue-100" />
           </div>
         </div>
         <div className="mt-2 space-y-1">
@@ -166,7 +166,7 @@ export default function KpiStrip({
             <span>Caja vs. inicio</span>
             <span className="tabular-nums text-slate-600">{budgetPct}%</span>
           </div>
-          <div className="h-1 overflow-hidden rounded-full bg-slate-100">
+          <div className="h-1 overflow-hidden rounded-full bg-blue-50">
             <div
               className={cn("h-full rounded-full transition-all", barTone[budgetTier])}
               style={{ width: `${budgetPct}%` }}

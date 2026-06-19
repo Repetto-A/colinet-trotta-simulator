@@ -25,6 +25,7 @@ import type { BusinessActionDefinition } from "@/lib/business-decisions"
 import type { BusinessGameState } from "@/types/business-game"
 import { INITIATIVES, type InitiativeType, type Season } from "@/types/initiatives"
 import type { EnvironmentalEvent } from "@/types/events"
+import { getEventPolarity } from "@/types/events"
 import type { ScenarioId } from "@/types/scenario"
 
 const defaultCooldowns: CooldownState = {
@@ -58,7 +59,7 @@ type GameLoopAction =
   | { type: "REDESIGN_JOB"; positionId: string }
   | { type: "ASSIGN_INITIATIVE"; slotIndex: number; initiative: InitiativeType; season: Season }
   | { type: "RESOLVE_EVENT"; mode: "mitigate" | "accept" }
-  | { type: "DISMISS_ALERT" }
+  | { type: "DISMISS_ALERT"; index: number }
   | { type: "PUSH_ALERT"; message: string }
   | { type: "RESET"; gameState: BusinessGameState; season: Season }
 
@@ -94,7 +95,7 @@ function reducer(state: GameLoopState, action: GameLoopAction): GameLoopState {
       return createInitialLoopState(action.gameState, action.season)
 
     case "DISMISS_ALERT":
-      return { ...state, alerts: state.alerts.slice(1) }
+      return { ...state, alerts: state.alerts.filter((_, index) => index !== action.index) }
 
     case "PUSH_ALERT":
       return { ...state, alerts: [action.message, ...state.alerts].slice(0, 4) }
@@ -104,7 +105,7 @@ function reducer(state: GameLoopState, action: GameLoopAction): GameLoopState {
       if (!nextState) {
         return {
           ...state,
-          alerts: [`Necesitás $${INITIATIVE_ASSIGNMENT_COST} para asignar una iniciativa.`, ...state.alerts].slice(0, 4),
+          alerts: ["No hay margen en caja para abrir un frente nuevo.", ...state.alerts].slice(0, 4),
         }
       }
 
@@ -202,10 +203,12 @@ function reducer(state: GameLoopState, action: GameLoopAction): GameLoopState {
       }
 
       const nextGameState = resolveEventImpact(state.gameState, event, action.mode)
-      const alertMessage =
-        action.mode === "mitigate"
-          ? `Respuesta ejecutada: amortiguaste "${event.name}" y sostuviste el rumbo del ciclo.`
-          : `Impacto asumido: "${event.name}" condiciona los próximos turnos.`
+      const isFortune = getEventPolarity(event) === "fortune"
+      const alertMessage = isFortune
+        ? `Capitalizaste "${event.name}". El impulso queda en el ciclo.`
+        : action.mode === "mitigate"
+          ? `Respondiste "${event.name}" y amortiguaste parte del impacto.`
+          : `Asumiste "${event.name}". El efecto sigue en juego.`
 
       const learningRecap = event.learningConcept
         ? recordEventConcept(state.learningRecap, event.id, event.learningConcept)
@@ -277,8 +280,8 @@ export function useGameLoop(
     dispatch({ type: "RESOLVE_EVENT", mode })
   }, [])
 
-  const dismissAlert = useCallback(() => {
-    dispatch({ type: "DISMISS_ALERT" })
+  const dismissAlert = useCallback((index: number) => {
+    dispatch({ type: "DISMISS_ALERT", index })
   }, [])
 
   const pushAlert = useCallback((message: string) => {

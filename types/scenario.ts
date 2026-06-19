@@ -40,11 +40,11 @@ export interface ScenarioData {
 
   description: string
 
-  /** Contexto narrativo al iniciar el ciclo (intro + capítulo 1) */
+  /** Contexto narrativo de arranque del ciclo */
 
   openingHook: string
 
-  /** Objetivo del ciclo mostrado en el intro modal */
+  /** Objetivo principal del ciclo */
 
   chapterMission: string
 

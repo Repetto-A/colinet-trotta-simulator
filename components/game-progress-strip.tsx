@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { AlertTriangle, ChevronDown, ChevronUp, Star, Target } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { StoryBeat } from "@/lib/story-arc"
@@ -45,6 +45,10 @@ export default function GameProgressStrip({
   const scoreProgress = getScoreProgress(score)
   const pills = feedbackPills(feedback)
 
+  useEffect(() => {
+    setExpanded(initialExpanded)
+  }, [initialExpanded])
+
   return (
     <div className="overflow-hidden rounded-xl border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm">
       <button
@@ -70,7 +74,7 @@ export default function GameProgressStrip({
             <span className="font-bold tabular-nums text-slate-900">{score} pts</span>
             <span className="text-slate-300">·</span>
             <span className="font-medium text-slate-600">
-              Cap. {turn}/{maxTurns}
+              Avance {turn}/{maxTurns}
             </span>
             <span className="hidden text-slate-300 sm:inline">·</span>
             <span className="hidden truncate font-medium text-slate-700 sm:inline">{storyBeat.title}</span>
@@ -145,19 +149,33 @@ export default function GameProgressStrip({
             </div>
             <div className="space-y-1">
               <div className="flex justify-between text-[10px] text-slate-500">
-                <span>Victoria ({SCORE_VICTORY}+ pts)</span>
-                <span>{scoreProgress.progressToVictory}%</span>
+                <span>Avance del ciclo</span>
+                <span>
+                  {turn}/{maxTurns} · {cycleProgress}%
+                </span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                 <div
                   className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-500"
+                  style={{ width: `${cycleProgress}%` }}
+                />
+              </div>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <div className="flex justify-between text-[10px] text-slate-500">
+                <span>Puntaje rumbo a victoria ({SCORE_VICTORY}+ pts)</span>
+                <span>{scoreProgress.progressToVictory}%</span>
+              </div>
+              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
                   style={{ width: `${scoreProgress.progressToVictory}%` }}
                 />
               </div>
             </div>
             <div className="space-y-1 sm:col-span-2">
               <div className="flex justify-between text-[10px] text-slate-500">
-                <span>Excelencia ({SCORE_EXCELLENT}+ pts)</span>
+                <span>Puntaje rumbo a excelencia ({SCORE_EXCELLENT}+ pts)</span>
                 <span>{scoreProgress.progressToExcellent}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">

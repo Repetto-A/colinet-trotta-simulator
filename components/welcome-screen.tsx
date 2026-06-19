@@ -64,7 +64,7 @@ export default function WelcomeScreen({ onStart, onContinue, continueHint }: Wel
                   onClick={onContinue}
                   className="w-full rounded-xl px-8 py-5 text-base font-semibold sm:w-auto lg:min-w-[180px] bg-indigo-600 hover:bg-indigo-700"
                 >
-                  Continuar partida
+                  Retomar partida
                 </Button>
               )}
               <Button
@@ -73,13 +73,13 @@ export default function WelcomeScreen({ onStart, onContinue, continueHint }: Wel
                 onClick={onStart}
                 className="w-full rounded-xl px-8 py-5 text-base font-semibold sm:w-auto lg:min-w-[180px]"
               >
-                {onContinue ? "Nueva partida" : GAME_CONTENT.startCta}
+                {onContinue ? "Empezar nuevo ciclo" : GAME_CONTENT.startCta}
               </Button>
             </div>
 
             {onContinue && continueHint && (
               <p className="text-center text-sm text-muted-foreground lg:text-left">
-                Partida guardada: {continueHint}
+                Último guardado: {continueHint}
               </p>
             )}
           </div>

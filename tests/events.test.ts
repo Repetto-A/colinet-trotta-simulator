@@ -1,7 +1,13 @@
 import { describe, expect, it, vi } from "vitest"
 
 import { createScenarioState } from "../lib/colinet-trotta-content"
-import { EVENTS, EVENT_PROBABILITIES, generateRandomEvent } from "../types/events"
+import {
+  EVENTS,
+  EVENT_PROBABILITIES,
+  FORTUNE_EVENTS,
+  generateRandomEvent,
+  getEventPolarity,
+} from "../types/events"
 import type { ScenarioId } from "../types/scenario"
 import type { Season } from "../types/initiatives"
 
@@ -64,8 +70,22 @@ describe("environmental events", () => {
 
     expect(event).not.toBeNull()
     expect(event!.type).toBeTruthy()
-    expect(EVENTS[event!.type]).toBeDefined()
+    expect(EVENTS[event!.type as keyof typeof EVENTS] ?? FORTUNE_EVENTS[event!.type as keyof typeof FORTUNE_EVENTS]).toBeDefined()
 
     randomSpy.mockRestore()
+  })
+
+  it("can roll fortune events with positive polarity", () => {
+    const state = createScenarioState("core_pressure")
+    let index = 0
+    const rolls = [0.1, 0.05, 0.1, 0.1]
+    vi.spyOn(Math, "random").mockImplementation(() => rolls[index++ % rolls.length])
+
+    const event = generateRandomEvent("core_pressure", "summer", [], state)
+
+    expect(event).not.toBeNull()
+    expect(getEventPolarity(event!)).toBe("fortune")
+
+    vi.mocked(Math.random).mockRestore()
   })
 })

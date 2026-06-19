@@ -1,25 +1,25 @@
 export const GAME_CONTENT = {
   title: "Colinet Trotta: Decisiones que Importan",
-  eyebrow: "Simulación de Organización y Gestión Empresarial",
-  subtitle: "Tomá el rol de dirección. Cada decisión mueve los indicadores de toda la empresa.",
-  startCta: "Iniciar simulación",
-  footer: "No es un quiz: cada jugada cambia el sistema.",
+  eyebrow: "Simulación de estrategia y gestión",
+  subtitle: "Tomá el rol de dirección y sostené resultados bajo presión durante 12 turnos.",
+  startCta: "Comenzar simulación",
+  footer: "No hay respuestas únicas: cada decisión mueve todo el sistema.",
 }
 
 export const WELCOME_CARDS = [
   {
-    title: "Empresa real, decisiones reales",
-    description: "Presión de mercado, regulación y clientes al mismo tiempo.",
+    title: "Contexto empresarial real",
+    description: "Mercado, clientes y riesgo regulatorio impactan en simultáneo.",
     accent: "text-sky-600",
   },
   {
-    title: "Trade-offs de gestión",
-    description: "Ninguna decisión mejora todo a la vez.",
+    title: "Decisiones con costo",
+    description: "Cada movimiento mejora algo y tensiona otra variable.",
     accent: "text-emerald-600",
   },
   {
-    title: "Teoría en acción",
-    description: "Porter, BCG, Ansoff y más, como decisiones jugables.",
+    title: "Marcos en práctica",
+    description: "Porter, BCG, Ansoff y otros conceptos llevados a decisiones concretas.",
     accent: "text-amber-600",
   },
 ]

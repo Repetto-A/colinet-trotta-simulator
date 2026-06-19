@@ -118,11 +118,11 @@ describe("playtest balance", () => {
     expect(avg).toBeLessThan(82)
     // No se gana por defecto: el win rate global debe quedar lejos del 100%.
     expect(winRate).toBeGreaterThan(0.2)
-    expect(winRate).toBeLessThan(0.82)
+    expect(winRate).toBeLessThan(0.72)
     // El juego conservador/pasivo no debe ganar casi nunca.
     expect(cautiousWinRate).toBeLessThan(0.35)
     // Jugar activo y bien debe ser recompensado, sin ser trivial.
     expect(strongWinRate).toBeGreaterThan(0.45)
-    expect(strongWinRate).toBeLessThan(0.9)
+    expect(strongWinRate).toBeLessThan(0.82)
   })
 })
