@@ -113,7 +113,7 @@ function calculateLoadDecay(state: BusinessGameState) {
 
   // Entropía de mercado: los clientes se enfrían si no los atendés (poder de clientes / rivalidad).
   // Cuesta más sostener satisfacción alta que media (rendimientos decrecientes).
-  let clientSatisfaction = state.clientSatisfaction > 70 ? 2.2 : 1.4
+  let clientSatisfaction = state.clientSatisfaction > 70 ? 2.0 : 1.25
   // Entropía operativa: el ritmo de entrega se erosiona sin foco activo.
   let executionSpeed = 1.0
 

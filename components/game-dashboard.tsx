@@ -498,10 +498,11 @@ export default function GameDashboard({
           initialExpanded={gameState.turn === 1}
         />
 
-        {/* Escenario protagonista: oficina fija mientras se navega el resto */}
-        <div className="sticky z-10" style={{ top: headerHeight }}>
+        {/* Escenario protagonista: sticky en desktop; scroll natural en mobile */}
+        <div className="z-10 max-sm:relative sm:sticky" style={{ top: headerHeight }}>
           <OfficeScene
             gameState={gameState}
+            previousGameState={previousGameState}
             activeEvent={activeEvent}
             compact
             pulseKey={feedbackPulseKey}

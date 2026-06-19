@@ -121,10 +121,33 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
           <div>
             <h2 className="text-sm font-semibold text-slate-900 sm:text-base">Decisiones del comité</h2>
             <p className="flex items-center gap-1 text-[10px] text-slate-500 sm:text-xs">
-              <GripHorizontal className="h-3.5 w-3.5" />
-              Arrastrá o usá las flechas
+              <GripHorizontal className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">Arrastrá o usá las flechas</span>
+              <span className="sm:hidden">Deslizá para ver más</span>
             </p>
           </div>
+        </div>
+        <div className="flex items-center gap-1 sm:hidden">
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full border-slate-200 bg-white text-blue-700"
+            onClick={() => scrollBy(-280)}
+            aria-label="Ver decisiones anteriores"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="icon"
+            className="h-9 w-9 shrink-0 rounded-full border-slate-200 bg-white text-blue-700"
+            onClick={() => scrollBy(280)}
+            aria-label="Ver más decisiones"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
         <div className="hidden items-center gap-1 sm:flex">
           <Button
@@ -179,7 +202,7 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
               <article
                 key={action.id}
                 className={cn(
-                  "relative flex w-[240px] shrink-0 flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-shadow sm:w-[260px]",
+                  "relative flex w-[min(78vw,240px)] shrink-0 flex-col overflow-hidden rounded-xl border bg-white shadow-sm transition-shadow sm:w-[260px]",
                   disabled && "opacity-65 saturate-50",
                   recommended
                     ? "border-blue-300 shadow-md ring-1 ring-blue-200"

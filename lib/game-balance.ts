@@ -9,7 +9,7 @@ export const MAX_TURNS = 12
 export const STARTING_BUDGET = 630
 export const INITIATIVE_ASSIGNMENT_COST = 25
 export const TACTICAL_TUNE_COST = 28
-export const INITIATIVE_PAYOUT_RATE = 0.085
+export const INITIATIVE_PAYOUT_RATE = 0.092
 
 /** Etiqueta cualitativa para decisiones del comité (evita ruido de $ en cada carta). */
 export function formatDecisionCostTier(cost: number): string {
