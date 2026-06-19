@@ -13,7 +13,7 @@ describe("job positions and people mechanics", () => {
   it("reveals poorly designed roles as the company scales", () => {
     const state = createScenarioState("core_pressure")
     state.turn = 2
-    state.initiativeSlots[0] = { ...state.initiativeSlots[0], type: "wheat" }
+    state.initiativeSlots[0] = { ...state.initiativeSlots[0], type: "core_stabilization" }
 
     const synced = syncJobPositions(state)
     const revealed = synced.jobPositions.filter((position) => position.revealed)

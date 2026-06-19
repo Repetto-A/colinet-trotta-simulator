@@ -15,6 +15,7 @@ interface OfficeSceneProps {
   className?: string
   compact?: boolean
   pulseKey?: number
+  onOpenJobPositions?: () => void
 }
 
 type Tone = "good" | "warning" | "bad"
@@ -126,6 +127,7 @@ export default function OfficeScene({
   className,
   compact = false,
   pulseKey = 0,
+  onOpenJobPositions,
 }: OfficeSceneProps) {
   const [pulsing, setPulsing] = useState(false)
   const activeTypes = useMemo(
@@ -191,7 +193,7 @@ export default function OfficeScene({
   const frenteTeams: FrenteTeam[] = useMemo(
     () =>
       gameState.initiativeSlots.slice(0, TEAM_SLOT_COUNT).map((slot, index) => {
-        if (slot.type === "fallow") {
+        if (slot.type === "unassigned") {
           return { index, busy: false, label: "Libre", progress: 0, color: "#94a3b8" }
         }
         const initiative = INITIATIVES[slot.type]
@@ -355,7 +357,7 @@ export default function OfficeScene({
             compact ? "h-[155px] sm:h-[210px] lg:h-[240px]" : "h-auto min-h-[200px]",
           )}
           role="img"
-          aria-label="Oficina de Colinet Trotta con el comité trabajando"
+          aria-label="Oficina de Colinet Trotta con el equipo estratégico trabajando"
         >
           <polygon
             className="office-floor-layer"
@@ -516,7 +518,7 @@ export default function OfficeScene({
         ))}
       </div>
 
-      <FrentesStrip teams={frenteTeams} busyTeams={busyTeams} newHire={newHire} />
+      <FrentesStrip teams={frenteTeams} busyTeams={busyTeams} newHire={newHire} onOpenJobPositions={onOpenJobPositions} />
     </div>
   )
 }
@@ -525,10 +527,12 @@ function FrentesStrip({
   teams,
   busyTeams,
   newHire,
+  onOpenJobPositions,
 }: {
   teams: FrenteTeam[]
   busyTeams: number
   newHire: { title: string; fixed: boolean } | null
+  onOpenJobPositions?: () => void
 }) {
   return (
     <div className="space-y-2 border-t border-slate-100 bg-slate-50/80 px-2 py-2 sm:px-3">
@@ -559,14 +563,25 @@ function FrentesStrip({
         ))}
       </div>
       {newHire && (
-        <p
+        <div
           className={cn(
-            "rounded-md px-2 py-1 text-[11px] font-medium leading-snug",
+            "flex flex-col gap-2 rounded-md px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between",
             newHire.fixed ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800",
           )}
         >
-          {newHire.fixed ? `Rol definido: ${newHire.title}` : `Nuevo integrante: definí el rol de ${newHire.title}`}
-        </p>
+          <p className="text-[11px] font-medium leading-snug">
+            {newHire.fixed ? `Rol definido: ${newHire.title}` : `Nuevo integrante: definí el rol de ${newHire.title}`}
+          </p>
+          {!newHire.fixed && onOpenJobPositions && (
+            <button
+              type="button"
+              onClick={onOpenJobPositions}
+              className="shrink-0 rounded-md bg-amber-800 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-amber-900"
+            >
+              Ir a Puestos
+            </button>
+          )}
+        </div>
       )}
     </div>
   )

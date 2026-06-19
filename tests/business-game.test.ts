@@ -16,7 +16,7 @@ describe("business game domain", () => {
   })
 
   it("rewards transitions from enabling initiatives into core bets", () => {
-    const effect = calculateRotationEffect("clover", "wheat")
+    const effect = calculateRotationEffect("culture_program", "core_stabilization")
 
     expect(effect.type).toBe("bonus")
     expect(effect.processControlChange).toBeGreaterThan(0)
@@ -24,7 +24,7 @@ describe("business game domain", () => {
   })
 
   it("penalizes repeating the same initiative in the same capacity slot", () => {
-    const effect = calculateRotationEffect("wheat", "wheat")
+    const effect = calculateRotationEffect("core_stabilization", "core_stabilization")
 
     expect(effect.type).toBe("penalty")
     expect(effect.teamCapacityChange).toBeLessThan(0)

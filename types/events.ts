@@ -742,7 +742,7 @@ export const FORTUNE_EVENTS: Record<FortuneEventType, Record<string, Environment
       type: "partnership_win",
       polarity: "fortune",
       name: "Acuerdo comercial menor",
-      description: "ITware o un canal aliado abre una puerta regional sin consumir todo el comité.",
+      description: "ITware o un canal aliado abre una puerta regional sin consumir toda la capacidad estratégica.",
       severity: "low",
       effects: { clientSatisfactionChange: 6, sustainabilityChange: 6, moneyChange: 40 },
       canMitigate: false,

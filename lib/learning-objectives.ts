@@ -77,7 +77,7 @@ export function createInitialMissions(): LearningMission[] {
 }
 
 export function updateMissions(missions: LearningMission[], state: BusinessGameState, previousTurn: number): LearningMission[] {
-  const assigned = state.initiativeSlots.filter((slot) => slot.type !== "fallow")
+  const assigned = state.initiativeSlots.filter((slot) => slot.type !== "unassigned")
   const uniqueInitiatives = new Set(assigned.map((slot) => slot.type)).size
 
   return missions.map((mission) => {

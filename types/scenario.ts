@@ -148,7 +148,7 @@ export const SCENARIOS: Record<ScenarioId, ScenarioData> = {
 
     openingHook:
 
-      "El ecosistema GAUS despierta interés comercial. Cada canal nuevo compite con el core por la misma capacidad de entrega y por la atención del comité.",
+      "El ecosistema GAUS despierta interés comercial. Cada canal nuevo compite con el core por la misma capacidad de entrega y por el foco estratégico.",
 
     chapterMission:
 

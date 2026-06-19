@@ -88,8 +88,8 @@ export default function InitiativeSelector({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center overscroll-contain bg-slate-900/55 p-0 backdrop-blur-sm sm:items-center sm:p-4">
-      <Card className="flex max-h-[92vh] w-full flex-col overflow-hidden rounded-b-none border-slate-200 p-0 shadow-2xl sm:max-w-2xl sm:rounded-xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center overscroll-contain bg-slate-900/55 p-0 pb-[env(safe-area-inset-bottom)] backdrop-blur-sm sm:items-center sm:p-4">
+      <Card className="flex max-h-[min(92vh,100dvh)] w-full flex-col overflow-hidden rounded-b-none border-slate-200 p-0 shadow-2xl sm:max-w-2xl sm:rounded-xl">
         <div className="shrink-0 border-b bg-white p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
@@ -133,7 +133,7 @@ export default function InitiativeSelector({
               <Card
                 key={initiative.id}
                 className={cn(
-                  "border p-4 transition-colors hover:border-sky-300 hover:bg-sky-50/30",
+                  "border p-3 transition-colors hover:border-sky-300 hover:bg-sky-50/30 sm:p-4",
                   effect.type === "penalty" && "border-red-200",
                 )}
               >
@@ -188,7 +188,7 @@ export default function InitiativeSelector({
                     )}
 
                     <Button
-                      className="mt-3 min-h-10 w-full sm:w-auto"
+                      className="mt-3 min-h-10 w-full text-sm sm:w-auto"
                       variant="outline"
                       onClick={() => choose(initiative.id)}
                     >
@@ -200,20 +200,20 @@ export default function InitiativeSelector({
             )
           })}
 
-          {previousInitiative && previousInitiative !== "fallow" && (
+          {previousInitiative && previousInitiative !== "unassigned" && (
           <Card className="border-dashed border-slate-300 bg-slate-50/80 p-4">
             <div className="flex items-start gap-3">
               <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border bg-white">
                 <PauseCircle className="h-5 w-5 text-slate-500" />
               </div>
               <div className="flex-1">
-                <h3 className="font-semibold text-slate-900">{INITIATIVES.fallow.name}</h3>
-                <p className="mt-1 text-sm text-slate-600">{INITIATIVE_GUIDE.fallow.summary}</p>
+                <h3 className="font-semibold text-slate-900">{INITIATIVES.unassigned.name}</h3>
+                <p className="mt-1 text-sm text-slate-600">{INITIATIVE_GUIDE.unassigned.summary}</p>
                 <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-800">
                   <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  {INITIATIVE_GUIDE.fallow.tradeoff}
+                  {INITIATIVE_GUIDE.unassigned.tradeoff}
                 </p>
-                <Button variant="ghost" className="mt-2 min-h-10 px-0 text-slate-700 hover:text-slate-900" onClick={() => choose("fallow")}>
+                <Button variant="ghost" className="mt-2 min-h-10 px-0 text-slate-700 hover:text-slate-900" onClick={() => choose("unassigned")}>
                   Dejar este equipo libre por ahora
                 </Button>
               </div>

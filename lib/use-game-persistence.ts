@@ -12,7 +12,7 @@ import type { LearningRecap } from "@/lib/learning-recap"
 import { normalizeGameState } from "@/lib/colinet-trotta-content"
 
 const STORAGE_KEY = "colinet-trotta-game-save"
-const SAVE_VERSION = 1
+const SAVE_VERSION = 2
 const MAX_AGE_MS = 24 * 60 * 60 * 1000
 
 export interface PersistedGameSave {

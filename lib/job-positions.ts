@@ -12,7 +12,7 @@ export function createInitialJobPositions(): JobPosition[] {
 }
 
 export function countActiveInitiatives(state: BusinessGameState) {
-  return state.initiativeSlots.filter((slot) => slot.type !== "fallow").length
+  return state.initiativeSlots.filter((slot) => slot.type !== "unassigned").length
 }
 
 export function syncJobPositions(state: BusinessGameState): BusinessGameState {

@@ -1,12 +1,28 @@
 import type { BusinessGameState } from "@/types/business-game"
 import { STARTING_BUDGET, TEAM_SLOT_COUNT } from "@/lib/game-balance"
 import { createInitialJobPositions } from "@/lib/job-positions"
+import { INITIATIVES, type InitiativeType } from "@/types/initiatives"
 import { SCENARIOS, type ScenarioId } from "@/types/scenario"
-import type { InitiativeType } from "@/types/initiatives"
+
+const LEGACY_INITIATIVE_IDS: Record<string, InitiativeType> = {
+  wheat: "core_stabilization",
+  corn: "ecosystem_expansion",
+  soy: "itware_integration",
+  sunflower: "iso_program",
+  fallow: "unassigned",
+  vetch: "ai_pilot",
+  rye: "tech_debt_reduction",
+  clover: "culture_program",
+}
+
+export function migrateInitiativeType(type: string): InitiativeType {
+  if (type in INITIATIVES) return type as InitiativeType
+  return LEGACY_INITIATIVE_IDS[type] ?? "unassigned"
+}
 
 const emptySlots = (): BusinessGameState["initiativeSlots"] =>
   Array.from({ length: TEAM_SLOT_COUNT }, () => ({
-    type: "fallow" as InitiativeType,
+    type: "unassigned" as InitiativeType,
     stageIndex: 0,
     stageProgress: 0,
     turnsInStage: 0,
@@ -38,13 +54,29 @@ export function createScenarioState(scenarioId: ScenarioId): BusinessGameState {
   }
 }
 
-/** Alinea saves viejos (9 slots agrícolas) con los 3 equipos del comité. */
+/** Alinea saves viejos: 9 slots → 3 equipos e ids agrícolas → ids de negocio. */
 export function normalizeGameState(state: BusinessGameState): BusinessGameState {
-  if (state.initiativeSlots.length === TEAM_SLOT_COUNT) return state
-  return {
-    ...state,
-    initiativeSlots: state.initiativeSlots.slice(0, TEAM_SLOT_COUNT),
+  let next: BusinessGameState =
+    state.initiativeSlots.length === TEAM_SLOT_COUNT
+      ? state
+      : { ...state, initiativeSlots: state.initiativeSlots.slice(0, TEAM_SLOT_COUNT) }
+
+  const slots = next.initiativeSlots.map((slot) => ({
+    ...slot,
+    type: migrateInitiativeType(slot.type as string),
+    history: slot.history?.map((entry) => ({
+      ...entry,
+      type: migrateInitiativeType(entry.type as string),
+    })),
+  }))
+
+  const slotsChanged = slots.some((slot, index) => slot.type !== next.initiativeSlots[index]?.type)
+
+  if (slotsChanged) {
+    next = { ...next, initiativeSlots: slots }
   }
+
+  return next
 }
 
 export const COLINET_TROTTA_FACTS = {

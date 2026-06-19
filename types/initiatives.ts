@@ -1,7 +1,7 @@
 import type { ScenarioId } from "./scenario"
 
 export type Season = "spring" | "summer" | "autumn" | "winter"
-export type InitiativeType = "wheat" | "soy" | "corn" | "sunflower" | "fallow" | "vetch" | "rye" | "clover"
+export type InitiativeType = "core_stabilization" | "itware_integration" | "ecosystem_expansion" | "iso_program" | "unassigned" | "ai_pilot" | "tech_debt_reduction" | "culture_program"
 
 export interface PhenologicalStage {
   name: string
@@ -48,8 +48,8 @@ export const SEASONS: Record<Season, { name: string; months: string; description
 }
 
 export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
-  wheat: {
-    id: "wheat",
+  core_stabilization: {
+    id: "core_stabilization",
     name: "Estabilización de GAUS mp",
     sowingSeason: ["spring", "summer", "autumn"],
     harvestSeason: ["winter"],
@@ -85,11 +85,11 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     teamFocusNeed: 68,
     baseYield: 1200,
     color: "#38bdf8",
-    goodPredecessors: ["rye", "clover"],
-    badPredecessors: ["wheat"],
+    goodPredecessors: ["tech_debt_reduction", "culture_program"],
+    badPredecessors: ["core_stabilization"],
   },
-  corn: {
-    id: "corn",
+  ecosystem_expansion: {
+    id: "ecosystem_expansion",
     name: "Expansión del Ecosistema GAUS",
     sowingSeason: ["summer", "autumn"],
     harvestSeason: ["winter"],
@@ -104,11 +104,11 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     teamFocusNeed: 82,
     baseYield: 1500,
     color: "#84cc16",
-    goodPredecessors: ["wheat", "vetch"],
-    badPredecessors: ["corn", "sunflower"],
+    goodPredecessors: ["core_stabilization", "ai_pilot"],
+    badPredecessors: ["ecosystem_expansion", "iso_program"],
   },
-  soy: {
-    id: "soy",
+  itware_integration: {
+    id: "itware_integration",
     name: "Integración de ITware",
     sowingSeason: ["spring", "summer", "autumn"],
     harvestSeason: ["winter"],
@@ -124,11 +124,11 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     baseYield: 950,
     color: "#10b981",
     buildsTeamCapacity: true,
-    goodPredecessors: ["wheat", "corn", "rye"],
-    badPredecessors: ["soy"],
+    goodPredecessors: ["core_stabilization", "ecosystem_expansion", "tech_debt_reduction"],
+    badPredecessors: ["itware_integration"],
   },
-  sunflower: {
-    id: "sunflower",
+  iso_program: {
+    id: "iso_program",
     name: "Programa ISO 27001",
     sowingSeason: ["spring", "summer"],
     harvestSeason: ["winter"],
@@ -143,11 +143,11 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     teamFocusNeed: 66,
     baseYield: 900,
     color: "#f59e0b",
-    goodPredecessors: ["soy", "clover"],
-    badPredecessors: ["sunflower", "corn"],
+    goodPredecessors: ["itware_integration", "culture_program"],
+    badPredecessors: ["iso_program", "ecosystem_expansion"],
   },
-  vetch: {
-    id: "vetch",
+  ai_pilot: {
+    id: "ai_pilot",
     name: "Piloto de IA habilitadora",
     sowingSeason: ["spring", "summer"],
     harvestSeason: ["autumn", "winter"],
@@ -166,8 +166,8 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     goodPredecessors: [],
     badPredecessors: [],
   },
-  rye: {
-    id: "rye",
+  tech_debt_reduction: {
+    id: "tech_debt_reduction",
     name: "Reducción de deuda técnica",
     sowingSeason: ["spring", "autumn", "winter"],
     harvestSeason: ["summer", "winter"],
@@ -184,8 +184,8 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     goodPredecessors: [],
     badPredecessors: [],
   },
-  clover: {
-    id: "clover",
+  culture_program: {
+    id: "culture_program",
     name: "Programa de cultura y cambio",
     sowingSeason: ["spring", "autumn"],
     harvestSeason: ["winter"],
@@ -203,8 +203,8 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
     goodPredecessors: [],
     badPredecessors: [],
   },
-  fallow: {
-    id: "fallow",
+  unassigned: {
+    id: "unassigned",
     name: "Capacidad sin asignar",
     sowingSeason: ["spring", "summer", "autumn", "winter"],
     harvestSeason: ["spring", "summer", "autumn", "winter"],
@@ -218,7 +218,7 @@ export const INITIATIVES: Record<InitiativeType, InitiativeData> = {
 }
 
 export function calculateRotationEffect(previousInitiative: InitiativeType | null, newInitiative: InitiativeType): RotationEffect {
-  if (!previousInitiative || previousInitiative === "fallow") {
+  if (!previousInitiative || previousInitiative === "unassigned") {
     return {
       type: "neutral",
       message: "Primera iniciativa asignada a esta capacidad",
@@ -285,42 +285,42 @@ export const INITIATIVE_GUIDE: Record<
   InitiativeType,
   { summary: string; tradeoff: string; whenItFits: string }
 > = {
-  wheat: {
+  core_stabilization: {
     summary: "Endurecer GAUS mp: menos incidentes, SLAs recuperados y clientes enterprise más tranquilos.",
     tradeoff: "Congelás parte del roadmap comercial mientras el equipo pelea la base técnica.",
     whenItFits: "Cuando la confiabilidad del core amenaza contratos o escaladas.",
   },
-  corn: {
+  ecosystem_expansion: {
     summary: "Abrir el ecosistema GAUS: pilotos comerciales, nuevos módulos y tracción fuera del core.",
     tradeoff: "Quita foco y capacidad del producto principal si no hay gobernanza de portafolio.",
     whenItFits: "Cuando hay demanda real de crecimiento y el core aguanta una apuesta paralela.",
   },
-  soy: {
+  itware_integration: {
     summary: "Ordenar la relación con ITware: roles, entregables conjuntos y menos fricción con socios.",
     tradeoff: "Integrar socios lleva tiempo de coordinación antes de verse en revenue.",
     whenItFits: "Cuando la dependencia o el caos con aliados frena entregas regionales.",
   },
-  sunflower: {
+  iso_program: {
     summary: "Programa ISO 27001: controles, evidencia y señal de confianza ante clientes y regulador.",
     tradeoff: "Eleva la exigencia documental y puede frenar cambios rápidos.",
     whenItFits: "Cuando cumplimiento o auditorías pesan más que velocidad pura.",
   },
-  vetch: {
+  ai_pilot: {
     summary: "Piloto acotado de IA: aprender con límites, sin apostar todo el negocio.",
     tradeoff: "El retorno es aprendizaje y capacidad; no es un frente de revenue inmediato.",
     whenItFits: "Cuando querés innovar sin perder control operativo.",
   },
-  rye: {
+  tech_debt_reduction: {
     summary: "Bajar deuda técnica: inventario, refactor y base más barata de cambiar.",
     tradeoff: "Pocas novedades visibles para el mercado mientras limpiás por dentro.",
     whenItFits: "Cuando cada release cuesta más que antes y el equipo paga intereses técnicos.",
   },
-  clover: {
+  culture_program: {
     summary: "Cultura y cambio: narrativa, patrocinio y rituales que sostienen la transformación.",
     tradeoff: "No arregla solo incidentes ni revenue; prepara al equipo para lo que viene.",
     whenItFits: "Cuando hay resistencia, silos o fatiga después de muchos frentes.",
   },
-  fallow: {
+  unassigned: {
     summary: "No asignar frente todavía: el equipo queda libre para absorber urgencias o esperar timing.",
     tradeoff: "No avanzás iniciativas estratégicas mientras la capacidad está ociosa.",
     whenItFits: "Cuando la caja o el equipo no dan para abrir otro frente ahora.",
@@ -330,25 +330,25 @@ export const INITIATIVE_GUIDE: Record<
 export type InitiativePhaseFit = "ideal" | "off_phase"
 
 export function getInitiativePhaseFit(initiative: InitiativeData, season: Season): InitiativePhaseFit {
-  if (initiative.id === "fallow") return "ideal"
+  if (initiative.id === "unassigned") return "ideal"
   return initiative.sowingSeason.includes(season) ? "ideal" : "off_phase"
 }
 
 /** Frentes que encajan con la narrativa del escenario (sugerencia, no obligación). */
 export const SCENARIO_INITIATIVE_FITS: Record<ScenarioId, InitiativeType[]> = {
-  core_pressure: ["wheat", "rye"],
-  ai_innovation: ["vetch", "corn"],
-  portfolio_expansion: ["corn", "soy"],
-  governance_compliance: ["sunflower", "clover"],
-  regional_structure: ["soy", "corn"],
+  core_pressure: ["core_stabilization", "tech_debt_reduction"],
+  ai_innovation: ["ai_pilot", "ecosystem_expansion"],
+  portfolio_expansion: ["ecosystem_expansion", "itware_integration"],
+  governance_compliance: ["iso_program", "culture_program"],
+  regional_structure: ["itware_integration", "ecosystem_expansion"],
 }
 
 export function listSelectableInitiatives(season: Season): InitiativeData[] {
-  return Object.values(INITIATIVES).filter((item) => item.id !== "fallow")
+  return Object.values(INITIATIVES).filter((item) => item.id !== "unassigned")
 }
 
 export function describeInitiativeNeeds(initiative: InitiativeData): string {
-  if (initiative.id === "fallow") return "Sin demanda extra"
+  if (initiative.id === "unassigned") return "Sin demanda extra"
   const exec = initiative.executionNeed
   const team = initiative.teamFocusNeed
   const execLabel = exec >= 70 ? "alta exigencia de ejecución" : exec >= 50 ? "ejecución moderada" : "ejecución contenida"

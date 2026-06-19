@@ -39,14 +39,14 @@ function simulateGuidedCycle(seed: number) {
 
   for (let t = 0; t < MAX_TURNS; t++) {
     if (t === 1 && state.money >= 25) {
-      const next = selectInitiative(state, 0, "wheat", season)
+      const next = selectInitiative(state, 0, "core_stabilization", season)
       if (next) {
         state = next
         initiativesAssigned++
       }
     }
     if (t === 4 && state.money >= 25) {
-      const next = selectInitiative(state, 1, "clover", season)
+      const next = selectInitiative(state, 1, "culture_program", season)
       if (next) {
         state = next
         initiativesAssigned++

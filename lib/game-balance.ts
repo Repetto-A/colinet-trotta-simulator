@@ -4,7 +4,7 @@ import { getDerivedKpis } from "@/types/business-game"
 /** Equipos dedicados visibles en oficina y pestaña Frentes */
 export const TEAM_SLOT_COUNT = 3
 
-/** Duración del ciclo estratégico en turnos de comité */
+/** Duración del ciclo estratégico en turnos */
 export const CYCLE_TURNS = 10
 export const MAX_TURNS = 12
 
@@ -64,7 +64,7 @@ const outcomeHeadlines: Record<CycleOutcome, string> = {
   defeat_timeout: "Ciclo sin cierre",
   defeat_score: "Estrategia insuficiente",
   partial: "Ciclo sobrevivido",
-  victory: "Comité exitoso",
+  victory: "Ciclo exitoso",
   excellent: "Transformación sobresaliente",
 }
 
@@ -164,7 +164,7 @@ export function evaluateGameStatus(
       headline: outcomeHeadlines[outcome],
       detail:
         outcome === "defeat_timeout"
-          ? "Superaste el límite de turnos sin cerrar el ciclo con foco. El comité perdió legitimidad."
+          ? "Superaste el límite de turnos sin cerrar el ciclo con foco. Perdiste legitimidad estratégica."
           : buildVictoryDetail(outcome, score, state),
     }
   }
@@ -197,7 +197,7 @@ export function evaluateGameStatus(
     score,
     stars: starsFromScore(score, false),
     headline: outcomeHeadlines.playing,
-    detail: `Objetivo del comité: ${SCORE_VICTORY}+ pts para victoria · ${SCORE_EXCELLENT}+ para excelencia`,
+    detail: `Objetivo del ciclo: ${SCORE_VICTORY}+ pts para victoria · ${SCORE_EXCELLENT}+ para excelencia`,
   }
 }
 
@@ -214,7 +214,7 @@ function buildDefeatDetail(outcome: CycleOutcome, state: BusinessGameState, scor
     case "defeat_timeout":
       return "El ciclo se extendió demasiado. En la práctica, eso es una derrota operativa."
     case "defeat_score":
-      return `Puntaje final ${score ?? calculateCycleScore(state)}: por debajo del mínimo (${SCORE_PARTIAL}). El comité sobrevivió, pero no entregó resultados.`
+      return `Puntaje final ${score ?? calculateCycleScore(state)}: por debajo del mínimo (${SCORE_PARTIAL}). Sobreviviste el ciclo, pero no entregaste resultados.`
     default:
       return "La estrategia no alcanzó para sostener a Colinet Trotta."
   }
@@ -226,7 +226,7 @@ function buildVictoryDetail(outcome: CycleOutcome, score: number, state: Busines
     return `Puntaje ${score}: equilibrio entre clientes (${kpis.satisfaccion_clientes}%), control (${kpis.control_procesos}%) y confianza (${kpis.confianza_mercado}%).`
   }
   if (outcome === "victory") {
-    return `Puntaje ${score}: cerraste el ciclo con una base defendible. Todavía hay tensiones, pero el comité cumplió su mandato.`
+    return `Puntaje ${score}: cerraste el ciclo con una base defendible. Todavía hay tensiones, pero cumpliste el mandato estratégico.`
   }
   return `Puntaje ${score}: evitaste el colapso, pero varios frentes quedaron frágiles. Repetí el ciclo para mejorar el equilibrio.`
 }

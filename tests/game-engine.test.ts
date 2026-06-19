@@ -44,7 +44,7 @@ describe("game engine transitions", () => {
 
   it("advances initiative stages and changes season every three turns", () => {
     const state = createScenarioState("core_pressure")
-    const withInitiative = selectInitiative(state, 0, "wheat", "spring")
+    const withInitiative = selectInitiative(state, 0, "core_stabilization", "spring")
     expect(withInitiative).not.toBeNull()
 
     const next = advanceTurn({ state: { ...withInitiative!, turn: 2 }, currentSeason: "spring" })
@@ -56,7 +56,7 @@ describe("game engine transitions", () => {
 
   it("can progress a turn that was already incremented by an action", () => {
     const state = createScenarioState("core_pressure")
-    const withInitiative = selectInitiative(state, 0, "wheat", "spring")
+    const withInitiative = selectInitiative(state, 0, "core_stabilization", "spring")
     const action = BUSINESS_ACTIONS.find((item) => item.id === "stabilize")!
     const afterAction = applyBusinessAction({ ...withInitiative!, turn: 2 }, action)
 
@@ -71,22 +71,22 @@ describe("game engine transitions", () => {
     const state = createScenarioState("core_pressure")
     const prepared = {
       ...state,
-      initiativeSlots: state.initiativeSlots.map((slot, index) => (index === 0 ? { ...slot, type: "clover" as const } : slot)),
+      initiativeSlots: state.initiativeSlots.map((slot, index) => (index === 0 ? { ...slot, type: "culture_program" as const } : slot)),
     }
 
-    const next = selectInitiative(prepared, 0, "wheat", "spring")
+    const next = selectInitiative(prepared, 0, "core_stabilization", "spring")
 
     expect(next).not.toBeNull()
     expect(next!.money).toBe(prepared.money - INITIATIVE_ASSIGNMENT_COST)
-    expect(next!.initiativeSlots[0].type).toBe("wheat")
-    expect(next!.initiativeSlots[0].history?.[0]?.type).toBe("clover")
+    expect(next!.initiativeSlots[0].type).toBe("core_stabilization")
+    expect(next!.initiativeSlots[0].history?.[0]?.type).toBe("culture_program")
     expect(next!.processControl).toBeGreaterThan(prepared.processControl)
     expect(next!.teamCapacity).toBeGreaterThan(prepared.teamCapacity)
   })
 
   it("pays out when an initiative completes its final stage", () => {
     const state = createScenarioState("core_pressure")
-    const assigned = selectInitiative(state, 0, "wheat", "spring")!
+    const assigned = selectInitiative(state, 0, "core_stabilization", "spring")!
     const initiative = assigned.initiativeSlots[0]
     const finalStageDuration = 3
     assigned.initiativeSlots[0] = {
@@ -98,7 +98,7 @@ describe("game engine transitions", () => {
 
     const result = advanceTurn({ state: assigned, currentSeason: "winter", incrementTurn: true })
 
-    expect(result.state.initiativeSlots[0].type).toBe("fallow")
+    expect(result.state.initiativeSlots[0].type).toBe("unassigned")
     expect(result.state.money).toBeGreaterThan(assigned.money)
     expect(result.initiativeCompletions.length).toBe(1)
   })

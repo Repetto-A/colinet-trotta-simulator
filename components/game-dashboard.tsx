@@ -296,6 +296,28 @@ export default function GameDashboard({
 
 
 
+  const handleOpenJobPositions = () => {
+
+    setSecondaryTab("puestos")
+
+    requestAnimationFrame(() => {
+
+      const el = document.getElementById("secondary-panel")
+
+      if (!el) return
+
+      const headerOffset = headerHeight + 16
+
+      const y = el.getBoundingClientRect().top + window.scrollY - headerOffset
+
+      window.scrollTo({ top: y, behavior: "smooth" })
+
+    })
+
+  }
+
+
+
   const portfolioSection = (
 
     <div className="rounded-xl border bg-white p-4 shadow-sm sm:p-5">
@@ -510,6 +532,7 @@ export default function GameDashboard({
             activeEvent={activeEvent}
             compact
             pulseKey={feedbackPulseKey}
+            onOpenJobPositions={handleOpenJobPositions}
           />
         </div>
 
@@ -557,6 +580,8 @@ export default function GameDashboard({
         {/* Contenido de apoyo: no compite con la oficina ni el deck */}
 
         <Tabs
+
+          id="secondary-panel"
 
           value={secondaryTab}
 

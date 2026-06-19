@@ -37,7 +37,7 @@ export const getStoryBeat = (state: BusinessGameState, scenarioId: ScenarioId | 
       title: "Aterrizaje en terreno inestable",
       brief:
         scenario?.openingHook ??
-        `Asumiste el comité en “${scenario?.name ?? "Colinet Trotta"}”. Los primeros turnos definen si la empresa juega a la defensiva o toma iniciativa.`,
+        `Asumiste la dirección estratégica en “${scenario?.name ?? "Colinet Trotta"}”. Los primeros turnos definen si la empresa juega a la defensiva o toma iniciativa.`,
       objective:
         scenario?.chapterMission ??
         (scenarioId === "core_pressure"

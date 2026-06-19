@@ -24,7 +24,7 @@ export default function PortfolioMap({
   currentSeason = "spring",
 }: PortfolioMapProps) {
   const teamSlots = initiativeSlots.slice(0, TEAM_SLOT_COUNT)
-  const busyCount = teamSlots.filter((slot) => slot.type !== "fallow").length
+  const busyCount = teamSlots.filter((slot) => slot.type !== "unassigned").length
 
   return (
     <div className="space-y-4">
@@ -41,8 +41,8 @@ export default function PortfolioMap({
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
         {teamSlots.map((slot, index) => {
           const initiative = INITIATIVES[slot.type]
-          const activeStage = slot.type === "fallow" ? null : initiative.stages[slot.stageIndex]
-          const isEmpty = slot.type === "fallow"
+          const activeStage = slot.type === "unassigned" ? null : initiative.stages[slot.stageIndex]
+          const isEmpty = slot.type === "unassigned"
           const isFinalStage =
             !isEmpty && slot.stageIndex === initiative.stages.length - 1 && slot.stageProgress >= 70
 

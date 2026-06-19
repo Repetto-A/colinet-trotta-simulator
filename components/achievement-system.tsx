@@ -29,7 +29,7 @@ export default function AchievementSystem({ gameState, onAchievementUnlock }: Ac
   const [achievements, setAchievements] = useState<Achievement[]>([
     {
       id: "first-harvest",
-      title: "Primer comité completo",
+      title: "Primer ciclo completo",
       description: "Llegá al cierre del ciclo sin quebrar la operación",
       icon: Trophy,
       progress: 0,

@@ -93,7 +93,7 @@ const clamp = (value: number) => Math.max(0, Math.min(100, Math.round(value)))
 
 export function getDerivedKpis(state: BusinessGameState): DerivedKpis {
   const ecosystemAssigned = state.initiativeSlots.filter((slot) =>
-    ["corn", "sunflower", "vetch"].includes(slot.type),
+    ["ecosystem_expansion", "iso_program", "ai_pilot"].includes(slot.type),
   ).length
 
   return {

@@ -31,7 +31,7 @@ const strategies = {
     pickAction(state, cooldowns, ["culture_bbq", "govern"]),
 }
 
-const initiativeRotation: InitiativeType[] = ["wheat", "clover", "vetch", "corn"]
+const initiativeRotation: InitiativeType[] = ["core_stabilization", "culture_program", "ai_pilot", "ecosystem_expansion"]
 
 function simulate(scenarioId: ScenarioId, strategy: keyof typeof strategies, seed: number) {
   let random = seed

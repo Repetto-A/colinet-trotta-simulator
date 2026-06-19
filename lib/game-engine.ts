@@ -105,7 +105,7 @@ export function getActionCooldown(actionId: string) {
 }
 
 function calculateLoadDecay(state: BusinessGameState) {
-  const activeSlots = state.initiativeSlots.filter((slot) => slot.type !== "fallow").length
+  const activeSlots = state.initiativeSlots.filter((slot) => slot.type !== "unassigned").length
   const load = activeSlots * 0.45 + (state.executionSpeed < 45 ? 0.9 : 0) + (state.processControl < 45 ? 0.6 : 0)
   let processControl = Math.round(0.8 + load)
   let teamCapacity = Math.round(0.7 + load * 0.7)
@@ -274,7 +274,7 @@ export function selectInitiative(
   const rotationEffect = calculateRotationEffect(previousType, initiativeType)
   const updatedHistory = [...(currentSlot.history || [])]
 
-  if (previousType !== "fallow") {
+  if (previousType !== "unassigned") {
     updatedHistory.push({
       type: previousType,
       season: `${SEASONS[currentSeason].name} (Turn ${state.turn})`,
@@ -320,7 +320,7 @@ export function advanceTurn({
   let moneyGain = 0
 
   const updatedCrops = state.initiativeSlots.map((slot) => {
-    if (slot.type === "fallow") return slot
+    if (slot.type === "unassigned") return slot
 
     const initiative = INITIATIVES[slot.type]
     const stage = initiative.stages[slot.stageIndex]
@@ -343,7 +343,7 @@ export function advanceTurn({
       initiativeCompletions.push(`${initiative.name} cerrada · +$${payout}`)
 
       return {
-        type: "fallow" as InitiativeType,
+        type: "unassigned" as InitiativeType,
         stageIndex: 0,
         stageProgress: 0,
         turnsInStage: 0,
@@ -477,7 +477,7 @@ export function buildThresholdAlerts(state: BusinessGameState): string[] {
     alerts.push("El equipo está saturado: si seguís sumando iniciativas, aparece desgaste y retrabajo.")
   }
   if (state.turn >= MAX_TURNS - 2) {
-    alerts.push("Cierre inminente: quedan pocos turnos para alcanzar el umbral del comité.")
+    alerts.push("Cierre inminente: quedan pocos turnos para alcanzar el umbral del ciclo.")
   }
 
   for (const modifier of state.activeModifiers) {
