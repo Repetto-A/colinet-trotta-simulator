@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react"
 import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react"
+import { TEAM_SLOT_COUNT } from "@/lib/game-balance"
 import { cn } from "@/lib/utils"
 import { INITIATIVES } from "@/types/initiatives"
 import type { BusinessGameState } from "@/types/business-game"
@@ -189,7 +190,7 @@ export default function OfficeScene({
 
   const frenteTeams: FrenteTeam[] = useMemo(
     () =>
-      gameState.initiativeSlots.map((slot, index) => {
+      gameState.initiativeSlots.slice(0, TEAM_SLOT_COUNT).map((slot, index) => {
         if (slot.type === "fallow") {
           return { index, busy: false, label: "Libre", progress: 0, color: "#94a3b8" }
         }
@@ -420,6 +421,7 @@ export default function OfficeScene({
           {/* Equipos dedicados: frentes visibles en la oficina */}
           {frenteTeams.map((team, i) => {
             const tile = FRETE_TILES[i]
+            if (!tile) return null
             const p = iso(tile.gx, tile.gy)
             return (
               <g key={`frente-${team.index}`}>

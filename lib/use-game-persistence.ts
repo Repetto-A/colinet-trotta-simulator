@@ -9,6 +9,7 @@ import type { Season } from "@/types/initiatives"
 import type { ScenarioId } from "@/types/scenario"
 
 import type { LearningRecap } from "@/lib/learning-recap"
+import { normalizeGameState } from "@/lib/colinet-trotta-content"
 
 const STORAGE_KEY = "colinet-trotta-game-save"
 const SAVE_VERSION = 1
@@ -45,7 +46,11 @@ export function readPersistedSave(): PersistedGameSave | null {
       return null
     }
 
-    return parsed
+    return {
+      ...parsed,
+      gameState: normalizeGameState(parsed.gameState),
+      initialGameState: normalizeGameState(parsed.initialGameState),
+    }
   } catch {
     return null
   }

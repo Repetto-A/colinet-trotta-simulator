@@ -868,3 +868,143 @@ export function generateRandomEvent(
 
   return EVENTS[selected.eventType as SetbackEventType][rollSeverity()]
 }
+
+export interface EventResponseLabels {
+  /** Acción temática al invertir presupuesto */
+  mitigate: string
+  /** Acción temática al no hacer nada / asumir */
+  accept: string
+  /** Frase corta bajo el botón de mitigar */
+  mitigateDetail: string
+  /** Botón en cartas favorables */
+  fortune?: string
+}
+
+const EVENT_RESPONSE_COPY: Record<EventType, Omit<EventResponseLabels, "mitigateDetail"> & { mitigateVerb: string; acceptVerb: string }> = {
+  salary_parity: {
+    mitigateVerb: "Ajustar bandas salariales",
+    acceptVerb: "Dejar subir la tensión",
+    mitigate: "",
+    accept: "",
+  },
+  fx_gap: {
+    mitigateVerb: "Cubrir con reservas de caja",
+    acceptVerb: "Trasladar el costo al cliente",
+    mitigate: "",
+    accept: "",
+  },
+  client_escalation: {
+    mitigateVerb: "Escalar con atención VIP",
+    acceptVerb: "Dejar en cola de soporte",
+    mitigate: "",
+    accept: "",
+  },
+  regulatory_change: {
+    mitigateVerb: "Contratar consultoría SSN",
+    acceptVerb: "Presentar lo mínimo exigible",
+    mitigate: "",
+    accept: "",
+  },
+  security_audit: {
+    mitigateVerb: "Auditoría express y parches",
+    acceptVerb: "Confiar en la evidencia actual",
+    mitigate: "",
+    accept: "",
+  },
+  competitor_move: {
+    mitigateVerb: "Lanzar contraoferta comercial",
+    acceptVerb: "No reaccionar todavía",
+    mitigate: "",
+    accept: "",
+  },
+  talent_churn: {
+    mitigateVerb: "Retener con paquete y rol",
+    acceptVerb: "Repartir carga al resto",
+    mitigate: "",
+    accept: "",
+  },
+  vendor_blocker: {
+    mitigateVerb: "Pagar fee y desbloquear",
+    acceptVerb: "Workaround feo en producción",
+    mitigate: "",
+    accept: "",
+  },
+  delivery_bottleneck: {
+    mitigateVerb: "Sumar consultores externos",
+    acceptVerb: "Prometer y apretar fechas",
+    mitigate: "",
+    accept: "",
+  },
+  ai_incident: {
+    mitigateVerb: "Parche de emergencia en GAUS",
+    acceptVerb: "Seguir vendiendo igual",
+    mitigate: "",
+    accept: "",
+  },
+  training_gap: {
+    mitigateVerb: "Bootcamp relámpago al equipo",
+    acceptVerb: "Aprender en producción",
+    mitigate: "",
+    accept: "",
+  },
+  client_renewal: {
+    mitigateVerb: "Capitalizar con el cliente",
+    acceptVerb: "Agradecer y seguir",
+    fortune: "Capitalizar con el cliente",
+    mitigate: "",
+    accept: "",
+  },
+  talent_referral: {
+    mitigateVerb: "Contratar al referido ya",
+    acceptVerb: "Archivar para más adelante",
+    fortune: "Sumar al referido al equipo",
+    mitigate: "",
+    accept: "",
+  },
+  efficiency_breakthrough: {
+    mitigateVerb: "Institucionalizar la mejora",
+    acceptVerb: "Celebrar y seguir igual",
+    fortune: "Institucionalizar la mejora",
+    mitigate: "",
+    accept: "",
+  },
+  subsidy_grant: {
+    mitigateVerb: "Reinvertir el subsidio",
+    acceptVerb: "Guardar en caja",
+    fortune: "Reinvertir el subsidio",
+    mitigate: "",
+    accept: "",
+  },
+  partnership_win: {
+    mitigateVerb: "Activar el acuerdo ya",
+    acceptVerb: "Firmar y olvidar",
+    fortune: "Activar el acuerdo ya",
+    mitigate: "",
+    accept: "",
+  },
+}
+
+export function getEventResponseLabels(event: EnvironmentalEvent): EventResponseLabels {
+  const copy = EVENT_RESPONSE_COPY[event.type]
+  const cost = event.mitigationCost ?? 0
+  const pct = Math.round((event.mitigationEffectiveness ?? 0) * 100)
+
+  if (getEventPolarity(event) === "fortune") {
+    return {
+      mitigate: copy.fortune ?? copy.mitigateVerb,
+      accept: copy.acceptVerb,
+      mitigateDetail: "",
+      fortune: copy.fortune ?? "Capitalizar oportunidad",
+    }
+  }
+
+  return {
+    mitigate: event.canMitigate && cost > 0 ? `${copy.mitigateVerb} · $${cost}` : copy.mitigateVerb,
+    accept: copy.acceptVerb,
+    mitigateDetail:
+      event.canMitigate && cost > 0
+        ? `Suavizás ~${pct}% del impacto. Sale $${cost} de caja.`
+        : "",
+    fortune: copy.fortune,
+  }
+}

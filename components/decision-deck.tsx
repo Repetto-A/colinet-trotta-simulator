@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import { useHorizontalDragScroll } from "@/hooks/use-horizontal-drag-scroll"
 import { BUSINESS_ACTIONS, type BusinessActionDefinition } from "@/lib/business-decisions"
-import { formatDecisionCostTier } from "@/lib/game-balance"
+import { formatDecisionCostTierShort } from "@/lib/game-balance"
 import { PEOPLE_ACTION_IDS, STRATEGIC_ACTION_IDS } from "@/lib/game-engine"
 import type { BusinessGameState } from "@/types/business-game"
 
@@ -119,11 +119,11 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
             <Lightbulb className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="text-sm font-semibold text-slate-900 sm:text-base">Decisiones del comité</h2>
+            <h2 className="text-sm font-semibold text-slate-900 sm:text-base">Decisiones estratégicas</h2>
             <p className="flex items-center gap-1 text-[10px] text-slate-500 sm:text-xs">
               <GripHorizontal className="h-3.5 w-3.5 shrink-0" />
-              <span className="hidden sm:inline">Arrastrá o usá las flechas</span>
-              <span className="sm:hidden">Deslizá para ver más</span>
+              <span className="hidden sm:inline">Estrategia y personas · arrastrá o usá las flechas</span>
+              <span className="sm:hidden">Estrategia y personas · deslizá</span>
             </p>
           </div>
         </div>
@@ -269,7 +269,7 @@ export default function DecisionDeck({ gameState, cooldowns = {}, onAction }: De
                       ) : !canAfford ? (
                         "Presupuesto insuficiente"
                       ) : (
-                        <>Ejecutar · {formatDecisionCostTier(action.cost)}</>
+                        <>Ejecutar · ${action.cost} · {formatDecisionCostTierShort(action.cost)}</>
                       )}
                     </Button>
                   </div>

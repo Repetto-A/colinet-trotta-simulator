@@ -1,6 +1,9 @@
 import type { BusinessGameState } from "@/types/business-game"
 import { getDerivedKpis } from "@/types/business-game"
 
+/** Equipos dedicados visibles en oficina y pestaña Frentes */
+export const TEAM_SLOT_COUNT = 3
+
 /** Duración del ciclo estratégico en turnos de comité */
 export const CYCLE_TURNS = 10
 export const MAX_TURNS = 12
@@ -11,11 +14,16 @@ export const INITIATIVE_ASSIGNMENT_COST = 25
 export const TACTICAL_TUNE_COST = 28
 export const INITIATIVE_PAYOUT_RATE = 0.092
 
-/** Etiqueta cualitativa para decisiones del comité (evita ruido de $ en cada carta). */
+/** Etiqueta corta para botones (ligera / media / alta). */
+export function formatDecisionCostTierShort(cost: number): string {
+  if (cost <= 22) return "ligera"
+  if (cost <= 38) return "media"
+  return "alta"
+}
+
+/** Etiqueta cualitativa para decisiones estratégicas. */
 export function formatDecisionCostTier(cost: number): string {
-  if (cost <= 22) return "inversión ligera"
-  if (cost <= 38) return "inversión media"
-  return "inversión alta"
+  return `inversión ${formatDecisionCostTierShort(cost)}`
 }
 
 /** Puntuación para cerrar ciclo */

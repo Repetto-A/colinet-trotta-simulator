@@ -422,6 +422,10 @@ export default function GameDashboard({
 
           previousInitiative={gameState.initiativeSlots[selectedPlotIndex]?.type || null}
 
+          selectedScenario={selectedScenario}
+
+          teamIndex={selectedPlotIndex}
+
           onSelectInitiative={handleSelectInitiative}
 
           onClose={() => setShowInitiativeSelector(false)}

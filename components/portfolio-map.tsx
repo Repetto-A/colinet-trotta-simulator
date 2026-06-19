@@ -1,5 +1,6 @@
 "use client"
 
+import { TEAM_SLOT_COUNT } from "@/lib/game-balance"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { INITIATIVES, SEASONS, type InitiativeType, type Season } from "@/types/initiatives"
@@ -22,7 +23,8 @@ export default function PortfolioMap({
   onSlotClick,
   currentSeason = "spring",
 }: PortfolioMapProps) {
-  const busyCount = initiativeSlots.filter((slot) => slot.type !== "fallow").length
+  const teamSlots = initiativeSlots.slice(0, TEAM_SLOT_COUNT)
+  const busyCount = teamSlots.filter((slot) => slot.type !== "fallow").length
 
   return (
     <div className="space-y-4">
@@ -37,7 +39,7 @@ export default function PortfolioMap({
       </div>
 
       <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-        {initiativeSlots.map((slot, index) => {
+        {teamSlots.map((slot, index) => {
           const initiative = INITIATIVES[slot.type]
           const activeStage = slot.type === "fallow" ? null : initiative.stages[slot.stageIndex]
           const isEmpty = slot.type === "fallow"

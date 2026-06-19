@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import { createScenarioState } from "../lib/colinet-trotta-content"
 import { BUSINESS_ACTIONS } from "../lib/business-decisions"
-import { evaluateGameStatus, MAX_TURNS, SCORE_VICTORY, STARTING_BUDGET } from "../lib/game-balance"
+import { evaluateGameStatus, MAX_TURNS, SCORE_VICTORY, STARTING_BUDGET, TEAM_SLOT_COUNT } from "../lib/game-balance"
 import { executeStrategicTurn, selectInitiative } from "../lib/game-engine"
 import type { InitiativeType, Season } from "../types/initiatives"
 import type { ScenarioId } from "../types/scenario"
@@ -51,7 +51,7 @@ function simulate(scenarioId: ScenarioId, strategy: keyof typeof strategies, see
     const assignInitiatives = strategy !== "cautious" && t % 3 === 0 && initiativesAssigned < 3
     if (assignInitiatives && state.money >= 25) {
       const initiative = initiativeRotation[slot % initiativeRotation.length]
-      const next = selectInitiative(state, slot % 9, initiative, season)
+      const next = selectInitiative(state, slot % TEAM_SLOT_COUNT, initiative, season)
       if (next) {
         state = next
         slot++

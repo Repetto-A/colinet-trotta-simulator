@@ -1,11 +1,11 @@
 import type { BusinessGameState } from "@/types/business-game"
-import { STARTING_BUDGET } from "@/lib/game-balance"
+import { STARTING_BUDGET, TEAM_SLOT_COUNT } from "@/lib/game-balance"
 import { createInitialJobPositions } from "@/lib/job-positions"
 import { SCENARIOS, type ScenarioId } from "@/types/scenario"
 import type { InitiativeType } from "@/types/initiatives"
 
 const emptySlots = (): BusinessGameState["initiativeSlots"] =>
-  Array.from({ length: 9 }, () => ({
+  Array.from({ length: TEAM_SLOT_COUNT }, () => ({
     type: "fallow" as InitiativeType,
     stageIndex: 0,
     stageProgress: 0,
@@ -35,6 +35,15 @@ export function createScenarioState(scenarioId: ScenarioId): BusinessGameState {
     recentEventTypes: [],
     initiativesCompleted: 0,
     jobPositions: createInitialJobPositions(),
+  }
+}
+
+/** Alinea saves viejos (9 slots agrícolas) con los 3 equipos del comité. */
+export function normalizeGameState(state: BusinessGameState): BusinessGameState {
+  if (state.initiativeSlots.length === TEAM_SLOT_COUNT) return state
+  return {
+    ...state,
+    initiativeSlots: state.initiativeSlots.slice(0, TEAM_SLOT_COUNT),
   }
 }
 
