@@ -305,7 +305,8 @@
   .office-anim-kpi-led,
   .office-kpi-strip-react,
   .event-card-shake,
-  .event-card-celebrate {
+  .event-card-celebrate,
+  .welcome-preview-pulse {
     animation: none;
   }
 }
@@ -350,6 +351,20 @@
 
 .event-card-celebrate {
   animation: event-card-celebrate 0.75s ease-out;
+}
+
+@keyframes welcome-preview-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(59 130 246 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 3px rgb(59 130 246 / 0.25);
+  }
+}
+
+.welcome-preview-pulse {
+  animation: welcome-preview-pulse 2.5s ease-in-out infinite;
 }
 
 /* Carrusel de decisiones: arrastre con mouse + scroll oculto */

@@ -128,18 +128,23 @@ export default function Home() {
     [persist],
   )
 
-  const continueHint =
+  const savedSession =
     hydrated && hasValidSave && saveSummary
-      ? `${SCENARIOS[saveSummary.scenarioId].name} · turno ${saveSummary.turn} · ${saveSummary.savedAgoLabel}`
+      ? {
+          scenarioName: SCENARIOS[saveSummary.scenarioId].name,
+          turn: saveSummary.turn,
+          budget: saveSummary.budget,
+          savedAgoLabel: saveSummary.savedAgoLabel,
+        }
       : undefined
 
   return (
-    <main className="min-h-screen">
+    <div className="min-h-screen">
       {currentScreen === "welcome" && (
         <WelcomeScreen
           onStart={handleStartGame}
           onContinue={hasValidSave ? handleContinueGame : undefined}
-          continueHint={continueHint}
+          savedSession={savedSession}
         />
       )}
       {currentScreen === "scenario" && <ScenarioSelection onSelectScenario={handleSelectScenario} />}
@@ -176,6 +181,6 @@ export default function Home() {
           onBackToHome={handleBackToHome}
         />
       )}
-    </main>
+    </div>
   )
 }
