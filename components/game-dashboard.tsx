@@ -4,8 +4,6 @@
 
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react"
 
-import PortfolioMap from "@/components/portfolio-map"
-
 import DecisionDeck from "@/components/decision-deck"
 
 import JobPositionsPanel from "@/components/job-positions-panel"
@@ -36,15 +34,11 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 
 import { Button } from "@/components/ui/button"
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-
 import type { ScenarioId } from "@/types/scenario"
 
 import type { Season, InitiativeType } from "@/types/initiatives"
 
 import { SCENARIOS } from "@/types/scenario"
-
-import { SEASONS } from "@/types/initiatives"
 
 import type { BusinessGameState } from "@/types/business-game"
 
@@ -63,10 +57,6 @@ import type { BusinessActionDefinition } from "@/lib/business-decisions"
 import AlertList from "@/components/alert-list"
 
 import OfficeScene from "@/components/office-scene"
-
-
-
-type SecondaryTab = "portafolio" | "puestos" | "mision"
 
 
 
@@ -123,8 +113,6 @@ export default function GameDashboard({
   const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null)
 
   const [showProgressDetails, setShowProgressDetails] = useState(false)
-
-  const [secondaryTab, setSecondaryTab] = useState<SecondaryTab>("portafolio")
 
   const headerRef = useRef<HTMLDivElement>(null)
 
@@ -298,8 +286,6 @@ export default function GameDashboard({
 
   const handleOpenJobPositions = () => {
 
-    setSecondaryTab("puestos")
-
     requestAnimationFrame(() => {
 
       const el = document.getElementById("secondary-panel")
@@ -318,41 +304,13 @@ export default function GameDashboard({
 
 
 
-  const portfolioSection = (
-
-    <div className="rounded-xl border bg-white p-4 shadow-sm sm:p-5">
-
-      <div className="mb-4 flex items-center justify-between gap-2">
-
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">Frentes de trabajo</h2>
-
-        <span className="rounded-full bg-slate-100 px-2 py-1 text-right text-xs text-slate-700 sm:px-3">
-
-          {SEASONS[season].description}
-
-        </span>
-
-      </div>
-
-      <PortfolioMap
-        initiativeSlots={gameState.initiativeSlots}
-        onSlotClick={handlePlotClick}
-        currentSeason={season}
-      />
-
-    </div>
-
-  )
-
-
-
   const jobPositionsSection = (
 
-    <div className="rounded-xl border bg-white p-4 shadow-sm sm:p-5">
+    <div id="secondary-panel" className="scroll-mt-28 rounded-xl border bg-white p-4 shadow-sm sm:p-5">
 
       <div className="mb-4 flex items-center gap-2">
 
-        <h2 className="text-base font-semibold text-foreground sm:text-lg">Diseño de puestos</h2>
+        <h2 className="text-base font-semibold text-foreground sm:text-lg">Puestos del equipo</h2>
 
         <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-800">
 
@@ -533,6 +491,7 @@ export default function GameDashboard({
             compact
             pulseKey={feedbackPulseKey}
             onOpenJobPositions={handleOpenJobPositions}
+            onAssignTeam={handlePlotClick}
           />
         </div>
 
@@ -577,67 +536,11 @@ export default function GameDashboard({
 
 
 
-        {/* Contenido de apoyo: no compite con la oficina ni el deck */}
+        {/* Puestos: el equipo de la oficina y sus roles a rediseñar */}
+        {jobPositionsSection}
 
-        <Tabs
-
-          id="secondary-panel"
-
-          value={secondaryTab}
-
-          onValueChange={(value) => setSecondaryTab(value as SecondaryTab)}
-
-          className="space-y-4"
-
-        >
-
-          <TabsList className="grid h-11 w-full grid-cols-3">
-
-            <TabsTrigger value="portafolio" className="text-sm font-medium">
-
-              Frentes
-
-            </TabsTrigger>
-
-            <TabsTrigger value="puestos" className="text-sm font-medium">
-
-              Puestos
-
-            </TabsTrigger>
-
-            <TabsTrigger value="mision" className="text-sm font-medium">
-
-              Misión
-
-            </TabsTrigger>
-
-          </TabsList>
-
-
-
-          <TabsContent value="portafolio" className="mt-0 space-y-4 pb-4">
-
-            {portfolioSection}
-
-          </TabsContent>
-
-
-
-          <TabsContent value="puestos" className="mt-0 space-y-4 pb-4">
-
-            {jobPositionsSection}
-
-          </TabsContent>
-
-
-
-          <TabsContent value="mision" className="mt-0 space-y-4 pb-4">
-
-            {missionSidebar}
-
-          </TabsContent>
-
-        </Tabs>
+        {/* Misión y logros: guía de aprendizaje, al pie para no competir con la operación */}
+        {missionSidebar}
 
       </div>
 

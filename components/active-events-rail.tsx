@@ -26,17 +26,12 @@ export default function ActiveEventsRail({ modifiers, pendingEvent }: ActiveEven
           <span className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-900 text-lg">🎲</span>
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-slate-500">Giro del ciclo</p>
-            <p className="text-sm font-semibold text-slate-900">Como en la vida: imprevistos buenos y malos</p>
+            <p className="text-sm font-semibold text-slate-900">Cartas raras: pocas, con peso</p>
           </div>
         </div>
         {pendingEvent && (
-          <span
-            className={cn(
-              "inline-flex animate-pulse items-center gap-1 rounded-full px-2.5 py-1 text-xs font-bold",
-              pendingFortune ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-900",
-            )}
-          >
-            Carta pendiente
+          <span className="inline-flex animate-pulse items-center gap-1 rounded-full bg-slate-900 px-2.5 py-1 text-xs font-bold text-white">
+            Sacá la carta
           </span>
         )}
       </div>
@@ -57,9 +52,7 @@ export default function ActiveEventsRail({ modifiers, pendingEvent }: ActiveEven
               <Zap className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
             )}
             <span>
-              <span className="block text-[10px] font-bold uppercase tracking-wide opacity-70">
-                {pendingFortune ? "Buenas noticias" : "Imprevisto"}
-              </span>
+              <span className="block text-[10px] font-bold uppercase tracking-wide opacity-70">Carta del ciclo</span>
               {pendingEvent.name}
             </span>
           </span>

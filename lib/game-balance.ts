@@ -7,6 +7,9 @@ export const TEAM_SLOT_COUNT = 3
 /** Duración del ciclo estratégico en turnos */
 export const CYCLE_TURNS = 10
 export const MAX_TURNS = 12
+/** Cartas del ciclo (imprevistos / giros favorables): pocas y con peso */
+export const MAX_CYCLE_CARDS = 3
+export const CARD_EVENT_ROLL_CHANCE = 0.22
 
 /** Economía — 630 vs 640: dos palancas nuevas (~$50) en people/estrategia; caja inicial un poco más ajustada */
 export const STARTING_BUDGET = 630

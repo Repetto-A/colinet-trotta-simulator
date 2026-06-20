@@ -184,6 +184,30 @@ describe("game engine transitions", () => {
     expect(resolved.recentEventTypes).toContain("delivery_bottleneck")
   })
 
+  it("declining a fortune event only applies cash, not stat boosts", () => {
+    const state = createScenarioState("core_pressure")
+    const event: EnvironmentalEvent = {
+      id: "subsidy-test",
+      type: "subsidy_grant",
+      name: "Incentivo a la innovación",
+      description: "Test",
+      polarity: "fortune",
+      severity: "medium",
+      effects: { sustainabilityChange: 4, moneyChange: 55 },
+      canMitigate: false,
+      duration: 1,
+    }
+
+    const capitalized = resolveEventImpact(state, event, "mitigate")
+    const declined = resolveEventImpact(state, event, "accept")
+
+    expect(capitalized.sustainability).toBe(state.sustainability + 4)
+    expect(capitalized.money).toBe(state.money + 55)
+    expect(declined.sustainability).toBe(state.sustainability)
+    expect(declined.money).toBe(state.money + 55)
+    expect(declined.cycleCardsDrawn).toBe(1)
+  })
+
   it("applies mitigated event effects through legacy helper", () => {
     const state = createScenarioState("core_pressure")
     const event: EnvironmentalEvent = {

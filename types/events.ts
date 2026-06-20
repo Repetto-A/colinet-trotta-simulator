@@ -830,11 +830,11 @@ export function generateRandomEvent(
 
   if (setbackPool.length === 0 && fortunePool.length === 0) return null
 
-  let gate = 0.48
+  let gate = 0.34
   if (state) {
-    if (state.clientSatisfaction < 40 || state.processControl < 40 || state.teamCapacity < 40) gate = 0.58
-    if (state.activeModifiers.length > 0) gate = 0.34
-    if (state.clientSatisfaction >= 70 && state.teamCapacity >= 65) gate = 0.52
+    if (state.clientSatisfaction < 40 || state.processControl < 40 || state.teamCapacity < 40) gate = 0.42
+    if (state.activeModifiers.length > 0) gate = 0.22
+    if (state.clientSatisfaction >= 70 && state.teamCapacity >= 65) gate = 0.36
   }
   if (Math.random() > gate) return null
 

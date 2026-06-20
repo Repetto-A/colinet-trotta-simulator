@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useMemo, useRef, useState } from "react"
-import { ArrowDownRight, ArrowUpRight, Minus } from "lucide-react"
+import { ArrowDownRight, ArrowRight, ArrowUpRight, Minus, Plus, RefreshCw } from "lucide-react"
 import { TEAM_SLOT_COUNT } from "@/lib/game-balance"
 import { cn } from "@/lib/utils"
 import { INITIATIVES } from "@/types/initiatives"
@@ -16,6 +16,7 @@ interface OfficeSceneProps {
   compact?: boolean
   pulseKey?: number
   onOpenJobPositions?: () => void
+  onAssignTeam?: (index: number) => void
 }
 
 type Tone = "good" | "warning" | "bad"
@@ -116,6 +117,7 @@ interface FrenteTeam {
   index: number
   busy: boolean
   label: string
+  fullLabel: string
   progress: number
   color: string
 }
@@ -128,6 +130,7 @@ export default function OfficeScene({
   compact = false,
   pulseKey = 0,
   onOpenJobPositions,
+  onAssignTeam,
 }: OfficeSceneProps) {
   const [pulsing, setPulsing] = useState(false)
   const activeTypes = useMemo(
@@ -194,13 +197,14 @@ export default function OfficeScene({
     () =>
       gameState.initiativeSlots.slice(0, TEAM_SLOT_COUNT).map((slot, index) => {
         if (slot.type === "unassigned") {
-          return { index, busy: false, label: "Libre", progress: 0, color: "#94a3b8" }
+          return { index, busy: false, label: "Libre", fullLabel: "Libre", progress: 0, color: "#94a3b8" }
         }
         const initiative = INITIATIVES[slot.type]
         return {
           index,
           busy: true,
           label: shortLabel(initiative.name),
+          fullLabel: initiative.name,
           progress: Math.round(slot.stageProgress),
           color: initiative.color,
         }
@@ -518,7 +522,13 @@ export default function OfficeScene({
         ))}
       </div>
 
-      <FrentesStrip teams={frenteTeams} busyTeams={busyTeams} newHire={newHire} onOpenJobPositions={onOpenJobPositions} />
+      <FrentesStrip
+        teams={frenteTeams}
+        busyTeams={busyTeams}
+        newHire={newHire}
+        onOpenJobPositions={onOpenJobPositions}
+        onAssignTeam={onAssignTeam}
+      />
     </div>
   )
 }
@@ -528,44 +538,40 @@ function FrentesStrip({
   busyTeams,
   newHire,
   onOpenJobPositions,
+  onAssignTeam,
 }: {
   teams: FrenteTeam[]
   busyTeams: number
   newHire: { title: string; fixed: boolean } | null
   onOpenJobPositions?: () => void
+  onAssignTeam?: (index: number) => void
 }) {
+  const freeTeams = teams.length - busyTeams
+
   return (
-    <div className="space-y-2 border-t border-slate-100 bg-slate-50/80 px-2 py-2 sm:px-3">
+    <div className="space-y-2.5 border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white px-2.5 py-3 sm:px-3.5">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Frentes en la oficina</p>
-        <span className="shrink-0 text-[10px] font-medium text-slate-600">{busyTeams}/3 equipos ocupados</span>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-bold text-slate-900">Tus equipos</h3>
+          {freeTeams > 0 && (
+            <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-bold text-sky-700">
+              {freeTeams} {freeTeams === 1 ? "libre" : "libres"}
+            </span>
+          )}
+        </div>
+        <span className="shrink-0 text-[11px] font-medium text-slate-500">{busyTeams}/{teams.length} en marcha</span>
       </div>
-      <div className="flex gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:overflow-visible">
+
+      <div className="flex gap-2.5 overflow-x-auto pb-0.5 [scrollbar-width:none] sm:grid sm:grid-cols-3 sm:overflow-visible">
         {teams.map((team) => (
-          <div
-            key={team.index}
-            className={cn(
-              "min-w-[108px] shrink-0 rounded-lg border px-2 py-1.5 sm:min-w-0",
-              team.busy ? "border-sky-200 bg-white" : "border-dashed border-slate-300 bg-white/60",
-            )}
-          >
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: team.color }} />
-              <span className="text-[10px] font-bold text-slate-700">Equipo {team.index + 1}</span>
-            </div>
-            <p className="mt-0.5 truncate text-[11px] font-semibold text-slate-900">{team.label}</p>
-            {team.busy && (
-              <div className="mt-1 h-1 overflow-hidden rounded-full bg-slate-100">
-                <div className="h-full rounded-full transition-all" style={{ width: `${team.progress}%`, backgroundColor: team.color }} />
-              </div>
-            )}
-          </div>
+          <TeamCard key={team.index} team={team} onAssign={onAssignTeam} />
         ))}
       </div>
+
       {newHire && (
         <div
           className={cn(
-            "flex flex-col gap-2 rounded-md px-2 py-1.5 sm:flex-row sm:items-center sm:justify-between",
+            "flex flex-col gap-2 rounded-lg px-2.5 py-2 sm:flex-row sm:items-center sm:justify-between",
             newHire.fixed ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800",
           )}
         >
@@ -584,6 +590,72 @@ function FrentesStrip({
         </div>
       )}
     </div>
+  )
+}
+
+function TeamCard({ team, onAssign }: { team: FrenteTeam; onAssign?: (index: number) => void }) {
+  const interactive = Boolean(onAssign)
+  const handleClick = () => onAssign?.(team.index)
+
+  if (!team.busy) {
+    return (
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={!interactive}
+        className={cn(
+          "group flex min-w-[150px] shrink-0 flex-col gap-1.5 rounded-xl border-2 border-dashed border-sky-300 bg-sky-50/50 px-3 py-2.5 text-left transition-all sm:min-w-0",
+          interactive && "cursor-pointer hover:border-sky-400 hover:bg-sky-50 hover:shadow-sm active:scale-[0.99]",
+        )}
+      >
+        <div className="flex items-center justify-between gap-1.5">
+          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Equipo {team.index + 1}</span>
+          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm transition-transform group-hover:scale-110">
+            <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </span>
+        </div>
+        <p className="text-sm font-bold text-slate-900">Sin frente</p>
+        <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-sky-700">
+          Asignar tarea
+          <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+        </span>
+      </button>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      disabled={!interactive}
+      className={cn(
+        "group flex min-w-[150px] shrink-0 flex-col gap-1 rounded-xl border bg-white px-3 py-2.5 text-left shadow-sm transition-all sm:min-w-0",
+        interactive && "cursor-pointer hover:border-slate-300 hover:shadow active:scale-[0.99]",
+      )}
+      style={{ borderColor: `${team.color}55` }}
+    >
+      <div className="flex items-center justify-between gap-1.5">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: team.color }} />
+          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Equipo {team.index + 1}</span>
+        </span>
+        {interactive && (
+          <RefreshCw className="h-3 w-3 text-slate-300 transition-colors group-hover:text-slate-500" />
+        )}
+      </div>
+      <p className="truncate text-sm font-semibold text-slate-900" title={team.fullLabel}>
+        {team.fullLabel}
+      </p>
+      <div className="mt-0.5 flex items-center gap-2">
+        <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{ width: `${team.progress}%`, backgroundColor: team.color }}
+          />
+        </div>
+        <span className="shrink-0 text-[10px] font-bold tabular-nums text-slate-500">{team.progress}%</span>
+      </div>
+    </button>
   )
 }
 

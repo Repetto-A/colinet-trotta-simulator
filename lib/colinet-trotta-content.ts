@@ -49,6 +49,7 @@ export function createScenarioState(scenarioId: ScenarioId): BusinessGameState {
     lastActionId: null,
     activeModifiers: [],
     recentEventTypes: [],
+    cycleCardsDrawn: 0,
     initiativesCompleted: 0,
     jobPositions: createInitialJobPositions(),
   }
@@ -76,7 +77,10 @@ export function normalizeGameState(state: BusinessGameState): BusinessGameState 
     next = { ...next, initiativeSlots: slots }
   }
 
-  return next
+  return {
+    ...next,
+    cycleCardsDrawn: next.cycleCardsDrawn ?? 0,
+  }
 }
 
 export const COLINET_TROTTA_FACTS = {

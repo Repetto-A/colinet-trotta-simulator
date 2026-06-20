@@ -48,6 +48,8 @@ export interface BusinessGameState {
   lastActionId?: string | null
   activeModifiers: ActiveEventModifier[]
   recentEventTypes: EventType[]
+  /** Cartas del ciclo ya resueltas en esta partida (tope MAX_CYCLE_CARDS) */
+  cycleCardsDrawn?: number
   initiativesCompleted: number
   jobPositions: JobPosition[]
 }

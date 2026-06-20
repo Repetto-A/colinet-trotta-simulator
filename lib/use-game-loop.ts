@@ -195,17 +195,22 @@ function reducer(state: GameLoopState, action: GameLoopAction): GameLoopState {
       if (!state.activeEvent) return state
 
       const event = state.activeEvent
+      const isFortune = getEventPolarity(event) === "fortune"
       if (
         action.mode === "mitigate" &&
+        !isFortune &&
         (!event.canMitigate || !event.mitigationCost || state.gameState.money < event.mitigationCost)
       ) {
         return state
       }
 
       const nextGameState = resolveEventImpact(state.gameState, event, action.mode)
-      const isFortune = getEventPolarity(event) === "fortune"
       const alertMessage = isFortune
-        ? `Capitalizaste "${event.name}". El impulso queda en el ciclo.`
+        ? action.mode === "mitigate"
+          ? `Aprovechaste "${event.name}".`
+          : event.effects.moneyChange
+            ? `Guardaste en caja sin capitalizar "${event.name}".`
+            : `Dejaste pasar "${event.name}" por ahora.`
         : action.mode === "mitigate"
           ? `Respondiste "${event.name}" y amortiguaste parte del impacto.`
           : `Asumiste "${event.name}". El efecto sigue en juego.`

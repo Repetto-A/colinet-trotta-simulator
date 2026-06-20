@@ -5,8 +5,10 @@ import {
   syncJobPositions,
 } from "@/lib/job-positions"
 import {
+  CARD_EVENT_ROLL_CHANCE,
   INITIATIVE_ASSIGNMENT_COST,
   INITIATIVE_PAYOUT_RATE,
+  MAX_CYCLE_CARDS,
   MAX_TURNS,
   TACTICAL_TUNE_COST,
 } from "@/lib/game-balance"
@@ -388,6 +390,19 @@ export function resolveEventImpact(
   event: EnvironmentalEvent,
   mode: "mitigate" | "accept",
 ): BusinessGameState {
+  const isFortune = getEventPolarity(event) === "fortune"
+  const cardsDrawn = (state.cycleCardsDrawn ?? 0) + 1
+
+  if (isFortune && mode === "accept") {
+    const moneyDelta = event.effects.moneyChange ?? 0
+    return {
+      ...state,
+      money: state.money + moneyDelta,
+      recentEventTypes: [...state.recentEventTypes.slice(-2), event.type],
+      cycleCardsDrawn: cardsDrawn,
+    }
+  }
+
   const mitigationMultiplier = mode === "mitigate" ? 1 - (event.mitigationEffectiveness || 0) : 1
   const mitigationCost = mode === "mitigate" ? event.mitigationCost || 0 : 0
   const perTurn = divideEventEffects(event.effects, event.duration)
@@ -397,6 +412,7 @@ export function resolveEventImpact(
     ...next,
     money: next.money + Math.round((event.effects.moneyChange || 0) * mitigationMultiplier) - mitigationCost,
     recentEventTypes: [...state.recentEventTypes.slice(-2), event.type],
+    cycleCardsDrawn: cardsDrawn,
   }
 
   if (event.duration > 1) {
@@ -552,8 +568,12 @@ export function executeStrategicTurn({
     [action.id]: getActionCooldown(action.id),
   }
 
+  const cardsDrawn = advanced.state.cycleCardsDrawn ?? 0
   const pendingEvent =
-    scenarioId && Math.random() <= 0.58
+    scenarioId &&
+    cardsDrawn < MAX_CYCLE_CARDS &&
+    advanced.state.turn >= 2 &&
+    Math.random() <= CARD_EVENT_ROLL_CHANCE
       ? generateRandomEvent(scenarioId, advanced.currentSeason, previousState.recentEventTypes, advanced.state)
       : null
 
@@ -561,11 +581,7 @@ export function executeStrategicTurn({
     ...buildThresholdAlerts(advanced.state),
     ...advanced.initiativeCompletions,
     ...(pendingEvent
-      ? [
-          getEventPolarity(pendingEvent) === "fortune"
-            ? `Giro favorable: sacá la carta del ciclo.`
-            : `Imprevisto del ciclo: sacá la carta y decidí cómo responder.`,
-        ]
+      ? [`Sacá la carta del ciclo: ${pendingEvent.name}.`]
       : []),
     ...(advanced.state.activeModifiers.length > previousState.activeModifiers.length
       ? [`Un giro del ciclo sigue activo en los próximos turnos.`]
