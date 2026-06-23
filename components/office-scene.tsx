@@ -21,17 +21,86 @@ interface OfficeSceneProps {
 
 type Tone = "good" | "warning" | "bad"
 
-const TONE_FILL: Record<Tone, string> = { good: "#22c55e", warning: "#f59e0b", bad: "#ef4444" }
-const TONE_BODY: Record<Tone, string> = { good: "#2563eb", warning: "#d97706", bad: "#dc2626" }
-
 const INCIDENT_EVENT_TYPES: EventType[] = ["ai_incident", "delivery_bottleneck", "security_audit", "vendor_blocker"]
 const MACRO_EVENT_TYPES: EventType[] = ["fx_gap", "salary_parity", "regulatory_change"]
 
+/** Tres mesas en esquinas del piso (centro libre para reunión). */
 const FRETE_TILES = [
-  { gx: 4.05, gy: 0.75 },
-  { gx: 4.05, gy: 1.75 },
-  { gx: 4.05, gy: 2.75 },
+  { gx: 0.9, gy: 0.95 }, // Eq. 1 — arriba izquierda
+  { gx: 4.0, gy: 0.95 }, // Eq. 2 — arriba derecha
+  { gx: 0.9, gy: 3.95 }, // Eq. 3 — abajo izquierda (rack queda abajo derecha)
 ]
+
+/** Identidad fija por equipo (independiente de la iniciativa asignada). */
+const TEAM_IDENTITY = [
+  { body: "#2563eb", badge: "#1d4ed8", label: "1", hue: 208 },
+  { body: "#d97706", badge: "#b45309", label: "2", hue: 35 },
+  { body: "#7c3aed", badge: "#6d28d9", label: "3", hue: 270 },
+] as const
+
+/** Zona de deambulación libre (lejos de la mesa, hacia el centro de la sala). */
+const TEAM_PATROL_ZONES = [
+  { minGx: 1.15, maxGx: 2.4, minGy: 1.25, maxGy: 2.45 },
+  { minGx: 2.6, maxGx: 3.85, minGy: 1.25, maxGy: 2.45 },
+  { minGx: 1.15, maxGx: 2.4, minGy: 2.55, maxGy: 3.75 },
+] as const
+
+/** Posición del empleado sentado frente al monitor (trabajando). */
+const FRETE_AGENT_OFFSETS = [
+  { dgx: 0.22, dgy: 0.38 },
+  { dgx: -0.22, dgy: 0.38 },
+  { dgx: 0.22, dgy: -0.38 },
+]
+
+const MEETING_CENTER = { gx: 2, gy: 2 }
+const DESK_CLEAR_RADIUS = 1.05
+
+function teamPatrolHome(index: number) {
+  const zone = TEAM_PATROL_ZONES[index]
+  if (!zone) return MEETING_CENTER
+  return {
+    gx: (zone.minGx + zone.maxGx) / 2,
+    gy: (zone.minGy + zone.maxGy) / 2,
+  }
+}
+
+function frenteAgentSpot(index: number) {
+  const tile = FRETE_TILES[index]
+  const off = FRETE_AGENT_OFFSETS[index] ?? { dgx: -0.28, dgy: 0.22 }
+  if (!tile) return teamPatrolHome(index)
+  return { gx: tile.gx + off.dgx, gy: tile.gy + off.dgy }
+}
+
+function pickIdleWanderTarget(
+  agent: Pick<TeamAgentRuntime, "slotIndex" | "homeGx" | "homeGy" | "targetGx" | "targetGy">,
+) {
+  const zone = TEAM_PATROL_ZONES[agent.slotIndex]
+  const desk = FRETE_TILES[agent.slotIndex]
+  if (!zone) {
+    agent.targetGx = agent.homeGx
+    agent.targetGy = agent.homeGy
+    return
+  }
+
+  for (let attempt = 0; attempt < 12; attempt++) {
+    const gx = zone.minGx + Math.random() * (zone.maxGx - zone.minGx)
+    const gy = zone.minGy + Math.random() * (zone.maxGy - zone.minGy)
+    if (!desk || Math.hypot(gx - desk.gx, gy - desk.gy) >= DESK_CLEAR_RADIUS) {
+      agent.targetGx = gx
+      agent.targetGy = gy
+      return
+    }
+  }
+
+  agent.targetGx = (zone.minGx + zone.maxGx) / 2
+  agent.targetGy = (zone.minGy + zone.maxGy) / 2
+}
+
+function beginIdleWander(agent: TeamAgentRuntime) {
+  pickIdleWanderTarget(agent)
+  agent.phase = "idleWander"
+  agent.idlePauseUntil = 0
+}
 
 const TILE_W = 92
 const TILE_H = 46
@@ -50,16 +119,182 @@ function shortLabel(text: string, max = 16) {
   return `${text.slice(0, max - 1)}…`
 }
 
+/** Sombreado de color hex (patrón de business-tycoon/primitives.js). */
+function shadeHex(hex: string, amount: number): string {
+  const h = hex.replace("#", "")
+  let r = parseInt(h.slice(0, 2), 16) + amount
+  let g = parseInt(h.slice(2, 4), 16) + amount
+  let b = parseInt(h.slice(4, 6), 16) + amount
+  r = Math.max(0, Math.min(255, r))
+  g = Math.max(0, Math.min(255, g))
+  b = Math.max(0, Math.min(255, b))
+  return `rgb(${r},${g},${b})`
+}
+
+const WOOD_DESK = { top: "#8B7355", left: "#6B5335", right: "#7B6345" } as const
+const CHAIR_WOOD = { top: "#7B6B4B", left: "#5B4B2B", right: "#6B5B3B" } as const
+
+function IsoMonitor({
+  cx,
+  cy,
+  screenHue = 208,
+  badge,
+}: {
+  cx: number
+  cy: number
+  screenHue?: number
+  badge?: string
+}) {
+  return (
+    <g>
+      {/* Teclado sobre la tapa (tycoon: keyboard/mat on desk) */}
+      <rect x={cx - 8} y={cy - 4} width="16" height="2.4" rx="0.5" fill="#2b3037" />
+      {/* Cuerpo del monitor */}
+      <rect x={cx - 11} y={cy - 22} width="22" height="15" rx="1.5" fill="#0e1013" />
+      <rect x={cx - 10.5} y={cy - 21.5} width="21" height="1" fill="rgba(255,255,255,0.08)" />
+      {/* Pantalla activa con UI bars */}
+      <rect x={cx - 9} y={cy - 20} width="18" height="11" rx="0.5" fill={`hsl(${screenHue},42%,16%)`} />
+      <rect x={cx - 8} y={cy - 18.5} width="5" height="1.6" rx="0.3" fill={`hsla(${screenHue},65%,48%,0.85)`} />
+      <rect x={cx - 2} y={cy - 18.5} width="6" height="1.6" rx="0.3" fill={`hsla(${screenHue},65%,48%,0.85)`} />
+      <rect x={cx - 8} y={cy - 15.5} width="11" height="1.2" rx="0.3" fill="rgba(220,240,255,0.35)" />
+      <polygon
+        points={`${cx - 9},${cy - 20} ${cx - 2},${cy - 20} ${cx - 5},${cy - 16} ${cx - 9},${cy - 16}`}
+        fill="rgba(255,255,255,0.07)"
+      />
+      {/* Soporte + base */}
+      <rect x={cx - 1.5} y={cy - 7.5} width="3" height="4.5" fill="#2a2d33" />
+      <rect x={cx - 5.5} y={cy - 3.5} width="11" height="1.8" rx="0.5" fill="#3a3f47" />
+      {badge && (
+        <>
+          <circle cx={cx + 8} cy={cy - 21} r="4.5" fill={`hsl(${screenHue},55%,38%)`} stroke="#fff" strokeWidth="0.8" />
+          <text x={cx + 8} y={cy - 19.5} textAnchor="middle" fontSize="6" fontWeight="700" fill="#fff">
+            {badge}
+          </text>
+        </>
+      )}
+    </g>
+  )
+}
+
+/** Silla isométrica (tycoon: drawBox asiento + respaldo). */
+function IsoChair({ cx, cy }: { cx: number; cy: number }) {
+  const scx = cx - 16
+  const scy = cy + 5
+  const sw = 14
+  const sh = 7
+  const depth = 5
+  const top = `${scx},${scy - depth} ${scx + sw / 2},${scy + sh / 2 - depth} ${scx},${scy + sh - depth} ${scx - sw / 2},${scy + sh / 2 - depth}`
+  const left = `${scx - sw / 2},${scy + sh / 2 - depth} ${scx},${scy + sh - depth} ${scx},${scy + sh} ${scx - sw / 2},${scy + sh / 2}`
+  const right = `${scx + sw / 2},${scy + sh / 2 - depth} ${scx},${scy + sh - depth} ${scx},${scy + sh} ${scx + sw / 2},${scy + sh / 2}`
+  return (
+    <g>
+      <polygon points={left} fill={CHAIR_WOOD.left} />
+      <polygon points={right} fill={CHAIR_WOOD.right} />
+      <polygon points={top} fill={CHAIR_WOOD.top} />
+      <rect x={scx - 4} y={scy - 14} width="8" height="5" rx="1" fill={CHAIR_WOOD.left} />
+    </g>
+  )
+}
+
+/** Mesa de trabajo isométrica (tycoon drawBox + monitor + silla). */
+function IsoDesk({
+  cx,
+  cy,
+  hw = 24,
+  topFill = WOOD_DESK.top,
+  leftFill = WOOD_DESK.left,
+  rightFill = WOOD_DESK.right,
+  monitor,
+  label,
+  labelFill = "#3d3428",
+  interactive,
+  ariaLabel,
+  onActivate,
+}: {
+  cx: number
+  cy: number
+  hw?: number
+  topFill?: string
+  leftFill?: string
+  rightFill?: string
+  monitor?: { screenHue?: number; badge?: string }
+  label?: string
+  labelFill?: string
+  interactive?: boolean
+  ariaLabel?: string
+  onActivate?: () => void
+}) {
+  const depth = 10
+  const legH = 9
+  const top = `${cx},${cy - 2} ${cx + hw},${cy + 11} ${cx},${cy + 24} ${cx - hw},${cy + 11}`
+  const hitTop = `${cx},${cy - 6} ${cx + hw + 4},${cy + 11} ${cx},${cy + 28} ${cx - hw - 4},${cy + 11}`
+  const leftFace = `${cx - hw},${cy + 11} ${cx},${cy + 24} ${cx},${cy + 24 + depth} ${cx - hw + 5},${cy + 11 + depth}`
+  const rightFace = `${cx + hw},${cy + 11} ${cx},${cy + 24} ${cx},${cy + 24 + depth} ${cx + hw - 5},${cy + 11 + depth}`
+
+  const leg = (lx: number, ly: number) => (
+    <line
+      key={`leg-${lx}-${ly}`}
+      x1={lx}
+      y1={ly}
+      x2={lx}
+      y2={ly + legH}
+      stroke={shadeHex(WOOD_DESK.left, -20)}
+      strokeWidth="2.2"
+      strokeLinecap="round"
+    />
+  )
+
+  return (
+    <g>
+      <ellipse cx={cx} cy={cy + 24} rx={hw + 1} ry={8} fill="#000" opacity="0.08" />
+
+      <IsoChair cx={cx} cy={cy} />
+
+      {leg(cx - hw + 9, cy + 11 + depth)}
+      {leg(cx - 3, cy + 24 + depth)}
+      {leg(cx + 3, cy + 24 + depth)}
+      {leg(cx + hw - 9, cy + 11 + depth)}
+
+      <polygon points={leftFace} fill={leftFill} stroke={shadeHex(leftFill, -15)} strokeWidth="0.5" />
+      <polygon points={rightFace} fill={rightFill} stroke={shadeHex(rightFill, -15)} strokeWidth="0.5" />
+      <polygon points={top} fill={topFill} stroke={shadeHex(topFill, 20)} strokeWidth="0.6" />
+
+      {monitor && <IsoMonitor cx={cx} cy={cy} screenHue={monitor.screenHue} badge={monitor.badge} />}
+
+      {label && (
+        <text x={cx} y={cy + 9} textAnchor="middle" fontSize="7" fontWeight="600" fill={labelFill}>
+          {label}
+        </text>
+      )}
+
+      {interactive && onActivate && (
+        <polygon
+          points={hitTop}
+          fill="transparent"
+          className="cursor-pointer hover:fill-amber-500/10 focus:outline-none"
+          role="button"
+          tabIndex={0}
+          aria-label={ariaLabel}
+          onClick={onActivate}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              onActivate()
+            }
+          }}
+        />
+      )}
+    </g>
+  )
+}
+
 interface AreaDef {
   key: string
   area: string
-  name: string
   value: number
   prev: number
   tone: Tone
   hint: string
-  tile: { gx: number; gy: number }
-  tableSpot: { gx: number; gy: number }
 }
 
 function clientTone(v: number): { tone: Tone; hint: string } {
@@ -98,18 +333,21 @@ function macroHeadline(event: EnvironmentalEvent | null | undefined, activeTypes
   }
 }
 
-interface AgentRuntime {
+interface TeamAgentRuntime {
+  slotIndex: number
   gx: number
   gy: number
   targetGx: number
   targetGy: number
-  home: { gx: number; gy: number }
-  table: { gx: number; gy: number }
+  homeGx: number
+  homeGy: number
+  pool: { gx: number; gy: number }
+  frente: { gx: number; gy: number }
   speed: number
-  baseSpeed: number
-  phase: "atDesk" | "toTable" | "atTable" | "toDesk"
-  waitUntil: number
+  phase: "atPool" | "toFrente" | "atFrente" | "toPool" | "idleWander"
   facing: 1 | -1
+  busy: boolean
+  idlePauseUntil: number
   el: SVGGElement | null
 }
 
@@ -120,6 +358,8 @@ interface FrenteTeam {
   fullLabel: string
   progress: number
   color: string
+  teamColor: string
+  teamLabel: string
 }
 
 export default function OfficeScene({
@@ -153,42 +393,30 @@ export default function OfficeScene({
       {
         key: "client",
         area: "Cliente",
-        name: "María L.",
         value: gameState.clientSatisfaction,
         prev: prev.clientSatisfaction,
         ...c,
-        tile: { gx: 1, gy: 1 },
-        tableSpot: { gx: 1.65, gy: 1.65 },
       },
       {
         key: "team",
         area: "Equipo",
-        name: "Lucía V.",
         value: gameState.teamCapacity,
         prev: prev.teamCapacity,
         ...cap,
-        tile: { gx: 3, gy: 1 },
-        tableSpot: { gx: 2.35, gy: 1.65 },
       },
       {
         key: "product",
         area: "Producto GAUS",
-        name: "Tomás R.",
         value: gameState.processControl,
         prev: prev.processControl,
         ...p,
-        tile: { gx: 3, gy: 3 },
-        tableSpot: { gx: 2.35, gy: 2.35 },
       },
       {
         key: "compliance",
         area: "Cumplimiento",
-        name: "Esteban M.",
         value: gameState.sustainability,
         prev: prev.sustainability,
         ...s,
-        tile: { gx: 1, gy: 3 },
-        tableSpot: { gx: 1.65, gy: 2.35 },
       },
     ]
   }, [gameState, prev, hasIncident])
@@ -196,8 +424,18 @@ export default function OfficeScene({
   const frenteTeams: FrenteTeam[] = useMemo(
     () =>
       gameState.initiativeSlots.slice(0, TEAM_SLOT_COUNT).map((slot, index) => {
+        const identity = TEAM_IDENTITY[index] ?? TEAM_IDENTITY[0]
         if (slot.type === "unassigned") {
-          return { index, busy: false, label: "Libre", fullLabel: "Libre", progress: 0, color: "#94a3b8" }
+          return {
+            index,
+            busy: false,
+            label: "Libre",
+            fullLabel: "Libre",
+            progress: 0,
+            color: "#94a3b8",
+            teamColor: identity.body,
+            teamLabel: identity.label,
+          }
         }
         const initiative = INITIATIVES[slot.type]
         return {
@@ -207,6 +445,8 @@ export default function OfficeScene({
           fullLabel: initiative.name,
           progress: Math.round(slot.stageProgress),
           color: initiative.color,
+          teamColor: identity.body,
+          teamLabel: identity.label,
         }
       }),
     [gameState.initiativeSlots],
@@ -220,64 +460,116 @@ export default function OfficeScene({
   }, [gameState.jobPositions])
 
   const busyTeams = frenteTeams.filter((t) => t.busy).length
-  const agentsRef = useRef<AgentRuntime[]>([])
+  const teamAgentsRef = useRef<TeamAgentRuntime[]>([])
+  const prevTeamBusyRef = useRef<boolean[]>([])
   const lowEnergy = gameState.teamCapacity < 50
 
-  if (agentsRef.current.length !== areas.length + (newHire ? 1 : 0)) {
-    const base: AgentRuntime[] = areas.map((a) => ({
-      gx: a.tile.gx,
-      gy: a.tile.gy,
-      targetGx: a.tile.gx,
-      targetGy: a.tile.gy,
-      home: { ...a.tile },
-      table: { ...a.tableSpot },
-      speed: 0.9,
-      baseSpeed: 0.9,
-      phase: "atDesk",
-      waitUntil: 0,
-      facing: 1,
-      el: null,
-    }))
-    if (newHire) {
-      base.push({
-        gx: 2,
-        gy: -0.6,
-        targetGx: 2,
-        targetGy: 0.4,
-        home: { gx: 2, gy: 0.4 },
-        table: { gx: 2, gy: 1.4 },
-        speed: 0.8,
-        baseSpeed: 0.8,
-        phase: "toDesk",
-        waitUntil: 0,
+  if (teamAgentsRef.current.length !== TEAM_SLOT_COUNT) {
+    teamAgentsRef.current = Array.from({ length: TEAM_SLOT_COUNT }, (_, index) => {
+      const pool = teamPatrolHome(index)
+      const frente = frenteAgentSpot(index)
+      const busy = frenteTeams[index]?.busy ?? false
+      const agent: TeamAgentRuntime = {
+        slotIndex: index,
+        gx: MEETING_CENTER.gx,
+        gy: MEETING_CENTER.gy,
+        targetGx: busy ? frente.gx : pool.gx,
+        targetGy: busy ? frente.gy : pool.gy,
+        homeGx: pool.gx,
+        homeGy: pool.gy,
+        pool,
+        frente,
+        speed: 1.15,
+        phase: busy ? "toFrente" : "idleWander",
         facing: 1,
+        busy,
+        idlePauseUntil: 0,
         el: null,
-      })
-    }
-    agentsRef.current = base
+      }
+      if (!busy) pickIdleWanderTarget(agent)
+      return agent
+    })
+    prevTeamBusyRef.current = frenteTeams.map((t) => t.busy)
   }
 
-  const setAgentRef = (index: number) => (el: SVGGElement | null) => {
-    if (agentsRef.current[index]) agentsRef.current[index].el = el
+  const setTeamAgentRef = (index: number) => (el: SVGGElement | null) => {
+    if (teamAgentsRef.current[index]) teamAgentsRef.current[index].el = el
   }
+
+  useEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+
+    frenteTeams.forEach((team, index) => {
+      const agent = teamAgentsRef.current[index]
+      if (!agent) return
+
+      const pool = teamPatrolHome(index)
+      const frente = frenteAgentSpot(index)
+      agent.pool = pool
+      agent.frente = frente
+      agent.homeGx = pool.gx
+      agent.homeGy = pool.gy
+
+      const wasBusy = prevTeamBusyRef.current[index] ?? false
+      const busyChanged = team.busy !== wasBusy
+
+      if (busyChanged) {
+        agent.busy = team.busy
+        agent.idlePauseUntil = 0
+        if (team.busy) {
+          agent.targetGx = frente.gx
+          agent.targetGy = frente.gy
+          if (reducedMotion) {
+            agent.gx = frente.gx
+            agent.gy = frente.gy
+            agent.phase = "atFrente"
+          } else {
+            agent.phase = "toFrente"
+          }
+        } else {
+          agent.idlePauseUntil = 0
+          if (reducedMotion) {
+            agent.gx = pool.gx
+            agent.gy = pool.gy
+            agent.phase = "atPool"
+          } else {
+            beginIdleWander(agent)
+          }
+        }
+      } else if (agent.busy !== team.busy) {
+        agent.busy = team.busy
+      } else if (!team.busy) {
+        const atHome = Math.hypot(agent.gx - pool.gx, agent.gy - pool.gy) < 0.08
+        if (!atHome && agent.phase !== "toPool" && agent.phase !== "idleWander") {
+          agent.targetGx = pool.gx
+          agent.targetGy = pool.gy
+          agent.phase = reducedMotion ? "atPool" : "toPool"
+          if (reducedMotion) {
+            agent.gx = pool.gx
+            agent.gy = pool.gy
+          }
+        }
+      } else {
+        const atDesk = Math.hypot(agent.gx - frente.gx, agent.gy - frente.gy) < 0.08
+        if (!atDesk && agent.phase !== "toFrente") {
+          agent.targetGx = frente.gx
+          agent.targetGy = frente.gy
+          agent.phase = reducedMotion ? "atFrente" : "toFrente"
+          if (reducedMotion) {
+            agent.gx = frente.gx
+            agent.gy = frente.gy
+          }
+        }
+      }
+    })
+
+    prevTeamBusyRef.current = frenteTeams.map((t) => t.busy)
+  }, [frenteTeams])
 
   useEffect(() => {
     if (pulseKey <= 0) return
     setPulsing(true)
-    const now = performance.now()
-    for (const agent of agentsRef.current) {
-      agent.targetGx = agent.table.gx
-      agent.targetGy = agent.table.gy
-      agent.phase = "toTable"
-      agent.speed = agent.baseSpeed * 2.2
-      agent.waitUntil = now + 2200
-    }
-    const timer = window.setTimeout(() => {
-      setPulsing(false)
-      for (const agent of agentsRef.current) {
-        agent.speed = agent.baseSpeed
-      }
-    }, 1100)
+    const timer = window.setTimeout(() => setPulsing(false), 1100)
     return () => window.clearTimeout(timer)
   }, [pulseKey])
 
@@ -290,48 +582,58 @@ export default function OfficeScene({
       const dt = Math.min(0.05, (now - last) / 1000)
       last = now
 
-      for (const a of agentsRef.current) {
-        if (a.phase === "atDesk" || a.phase === "atTable") {
-          if (now >= a.waitUntil) {
-            if (a.phase === "atDesk") {
-              a.targetGx = a.table.gx
-              a.targetGy = a.table.gy
-              a.phase = "toTable"
-            } else {
-              a.targetGx = a.home.gx
-              a.targetGy = a.home.gy
-              a.phase = "toDesk"
-            }
-          }
-        } else {
-          const dx = a.targetGx - a.gx
-          const dy = a.targetGy - a.gy
+      for (const t of teamAgentsRef.current) {
+        const moving =
+          t.phase === "toFrente" || t.phase === "toPool" || t.phase === "idleWander"
+
+        if (moving) {
+          const dx = t.targetGx - t.gx
+          const dy = t.targetGy - t.gy
           const dist = Math.hypot(dx, dy)
-          const step = a.speed * speedMul * dt
-          if (a.facing !== (dx >= 0 ? 1 : -1) && Math.abs(dx) > 0.02) a.facing = dx >= 0 ? 1 : -1
+          const step =
+            (t.phase === "idleWander"
+              ? t.speed * 0.68
+              : t.phase === "toFrente"
+                ? t.speed * 1.15
+                : t.speed) *
+            speedMul *
+            dt
+          if (t.facing !== (dx >= 0 ? 1 : -1) && Math.abs(dx) > 0.02) t.facing = dx >= 0 ? 1 : -1
           if (dist <= step || dist < 0.001) {
-            a.gx = a.targetGx
-            a.gy = a.targetGy
-            a.phase = a.phase === "toTable" ? "atTable" : "atDesk"
-            a.waitUntil = now + 1400 + Math.random() * 2600
+            t.gx = t.targetGx
+            t.gy = t.targetGy
+            if (t.phase === "toFrente") t.phase = "atFrente"
+            else if (t.phase === "toPool") beginIdleWander(t)
+            else if (t.phase === "idleWander") {
+              t.phase = "atPool"
+              t.idlePauseUntil = now + 280 + Math.random() * 420
+            }
           } else {
-            a.gx += (dx / dist) * step
-            a.gy += (dy / dist) * step
+            t.gx += (dx / dist) * step
+            t.gy += (dy / dist) * step
           }
+        } else if (t.phase === "atPool" && !t.busy && now >= t.idlePauseUntil) {
+          beginIdleWander(t)
         }
 
-        if (a.el) {
-          const p = iso(a.gx, a.gy)
-          const moving = a.phase === "toTable" || a.phase === "toDesk"
-          const bob = moving ? Math.sin(now / 110) * (pulsing ? 2.4 : 1.6) : pulsing && a.phase === "atTable" ? Math.sin(now / 80) * 1.2 : 0
-          a.el.setAttribute("transform", `translate(${p.x.toFixed(1)} ${(p.y + bob).toFixed(1)}) scale(${a.facing} 1)`)
+        if (t.el) {
+          const p = iso(t.gx, t.gy)
+          const isMoving =
+            t.phase === "toFrente" || t.phase === "toPool" || t.phase === "idleWander"
+          const working = t.phase === "atFrente" && t.busy
+          const bob = isMoving
+            ? Math.sin(now / 100) * 1.8
+            : working
+              ? Math.sin(now / 120) * 1.15
+              : Math.sin(now / 380 + t.slotIndex) * 0.45
+          t.el.setAttribute("transform", `translate(${p.x.toFixed(1)} ${(p.y + bob).toFixed(1)}) scale(${t.facing} 1)`)
         }
       }
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [lowEnergy, areas.length, Boolean(newHire), pulsing])
+  }, [lowEnergy, pulsing])
 
   const floor = [iso(0, 0), iso(5, 0), iso(5, 5), iso(0, 5)]
   const floorPoints = floor.map((p) => `${p.x},${p.y}`).join(" ")
@@ -361,7 +663,7 @@ export default function OfficeScene({
             compact ? "h-[155px] sm:h-[210px] lg:h-[240px]" : "h-auto min-h-[200px]",
           )}
           role="img"
-          aria-label="Oficina de Colinet Trotta con el equipo estratégico trabajando"
+          aria-label="Oficina de Colinet Trotta: 3 equipos y mesas de trabajo"
         >
           <polygon
             className="office-floor-layer"
@@ -405,66 +707,31 @@ export default function OfficeScene({
             )
           })()}
 
-          {areas.map((a) => {
-            const p = iso(a.tile.gx, a.tile.gy)
-            return (
-              <g key={`desk-${a.key}`}>
-                <ellipse cx={p.x} cy={p.y + 14} rx="30" ry="11" fill="#000" opacity="0.05" />
-                <polygon
-                  points={`${p.x},${p.y - 2} ${p.x + 26},${p.y + 11} ${p.x},${p.y + 24} ${p.x - 26},${p.y + 11}`}
-                  fill="#e2e8f0"
-                />
-                {a.key === "product" && (
-                  <rect x={p.x + 14} y={p.y - 16} width="18" height="13" rx="2" fill={hasIncident ? "#b91c1c" : "#334155"} />
-                )}
-                {a.key === "team" && (
-                  <rect x={p.x + 12} y={p.y - 12} width="16" height="11" rx="2" fill="#0f172a" />
-                )}
-              </g>
-            )
-          })}
-
-          {/* Equipos dedicados: frentes visibles en la oficina */}
+          {/* 3 mesas de equipo (clickeables) */}
           {frenteTeams.map((team, i) => {
             const tile = FRETE_TILES[i]
             if (!tile) return null
             const p = iso(tile.gx, tile.gy)
+            const identity = TEAM_IDENTITY[i] ?? TEAM_IDENTITY[0]
+            const ariaLabel = team.busy
+              ? `Equipo ${team.index + 1} en ${team.fullLabel}. Clic para reasignar.`
+              : `Equipo ${team.index + 1} libre. Clic para asignar tarea.`
+
             return (
               <g key={`frente-${team.index}`}>
-                <ellipse cx={p.x} cy={p.y + 10} rx="22" ry="8" fill="#000" opacity="0.05" />
-                <polygon
-                  points={`${p.x},${p.y - 4} ${p.x + 20},${p.y + 6} ${p.x},${p.y + 16} ${p.x - 20},${p.y + 6}`}
-                  fill={team.busy ? "#e0f2fe" : "#f8fafc"}
-                  stroke={team.busy ? team.color : "#cbd5e1"}
-                  strokeWidth="1.5"
-                  strokeDasharray={team.busy ? undefined : "4 3"}
+                <IsoDesk
+                  cx={p.x}
+                  cy={p.y}
+                  hw={26}
+                  monitor={{
+                    screenHue: team.busy ? 156 : identity.hue,
+                    badge: identity.label,
+                  }}
+                  label={team.busy ? shortLabel(team.label, 10) : "Libre"}
+                  interactive={Boolean(onAssignTeam)}
+                  ariaLabel={ariaLabel}
+                  onActivate={onAssignTeam ? () => onAssignTeam(team.index) : undefined}
                 />
-                {team.busy && (
-                  <rect
-                    x={p.x - 16}
-                    y={p.y + 18}
-                    width="32"
-                    height="3"
-                    rx="1.5"
-                    fill="#e2e8f0"
-                  />
-                )}
-                {team.busy && (
-                  <rect
-                    x={p.x - 16}
-                    y={p.y + 18}
-                    width={(32 * team.progress) / 100}
-                    height="3"
-                    rx="1.5"
-                    fill={team.color}
-                  />
-                )}
-                <text x={p.x} y={p.y - 10} textAnchor="middle" fontSize="9" fontWeight="700" fill="#64748b">
-                  Eq. {team.index + 1}
-                </text>
-                <text x={p.x} y={p.y + 4} textAnchor="middle" fontSize="8" fontWeight="600" fill="#0f172a">
-                  {team.busy ? shortLabel(team.label, 12) : "Libre"}
-                </text>
               </g>
             )
           })}
@@ -494,25 +761,38 @@ export default function OfficeScene({
             )
           })()}
 
-          {areas.map((a, i) => (
-            <g key={`agent-${a.key}`} ref={setAgentRef(i)}>
-              <ellipse cx="0" cy="2" rx="11" ry="4" fill="#000" opacity="0.12" />
-              <rect x="-7" y="-22" width="14" height="20" rx="6" fill={TONE_BODY[a.tone]} />
-              <circle cx="0" cy="-27" r="7" fill="#fcd9b8" />
-              <circle cx="4" cy="-34" r="4.5" fill={TONE_FILL[a.tone]} stroke="#fff" strokeWidth="1.5" />
-            </g>
-          ))}
-
-          {newHire && (
-            <g ref={setAgentRef(areas.length)}>
-              <ellipse cx="0" cy="2" rx="11" ry="4" fill="#000" opacity="0.12" />
-              <rect x="-7" y="-22" width="14" height="20" rx="6" fill={newHire.fixed ? "#16a34a" : "#94a3b8"} />
-              <circle cx="0" cy="-27" r="7" fill="#fcd9b8" />
-              <text x="0" y="-37" textAnchor="middle" fontSize="13" fontWeight="700" fill={newHire.fixed ? "#16a34a" : "#d97706"}>
-                {newHire.fixed ? "★" : "?"}
-              </text>
-            </g>
-          )}
+          {Array.from({ length: TEAM_SLOT_COUNT }, (_, i) => {
+            const team = frenteTeams[i]
+            const identity = TEAM_IDENTITY[i] ?? TEAM_IDENTITY[0]
+            if (!team) return null
+            return (
+              <g key={`team-agent-${i}`} ref={setTeamAgentRef(i)}>
+                {team.busy ? (
+                  <ellipse cx="0" cy="2" rx="13" ry="5" fill={team.color} opacity="0.28" />
+                ) : (
+                  <ellipse cx="0" cy="2" rx="10" ry="3.5" fill="#000" opacity="0.12" />
+                )}
+                <rect
+                  x="-6"
+                  y="-18"
+                  width="12"
+                  height="16"
+                  rx="5"
+                  fill={team.busy ? team.color : identity.body}
+                  stroke={team.busy ? team.color : "none"}
+                  strokeWidth={team.busy ? 1.4 : 0}
+                />
+                <circle cx="0" cy="-23" r="6" fill="#fcd9b8" />
+                {team.busy && (
+                  <rect x="-5" y="-14" width="10" height="4" rx="1" fill="#1e293b" opacity="0.85" />
+                )}
+                <circle cx="3" cy="-28" r="4" fill={identity.badge} stroke="#fff" strokeWidth="1.2" />
+                <text x="3" y="-26.5" textAnchor="middle" fontSize="6" fontWeight="700" fill="#fff">
+                  {identity.label}
+                </text>
+              </g>
+            )
+          })}
         </svg>
       </div>
 
@@ -609,7 +889,15 @@ function TeamCard({ team, onAssign }: { team: FrenteTeam; onAssign?: (index: num
         )}
       >
         <div className="flex items-center justify-between gap-1.5">
-          <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Equipo {team.index + 1}</span>
+          <span className="flex items-center gap-1.5">
+            <span
+              className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+              style={{ backgroundColor: team.teamColor }}
+            >
+              {team.teamLabel}
+            </span>
+            <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Equipo {team.index + 1}</span>
+          </span>
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-sky-600 text-white shadow-sm transition-transform group-hover:scale-110">
             <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
           </span>
@@ -636,7 +924,12 @@ function TeamCard({ team, onAssign }: { team: FrenteTeam; onAssign?: (index: num
     >
       <div className="flex items-center justify-between gap-1.5">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 shrink-0 rounded-full" style={{ backgroundColor: team.color }} />
+          <span
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-white"
+            style={{ backgroundColor: team.teamColor }}
+          >
+            {team.teamLabel}
+          </span>
           <span className="text-[11px] font-bold uppercase tracking-wide text-slate-500">Equipo {team.index + 1}</span>
         </span>
         {interactive && (

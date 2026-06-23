@@ -1,11 +1,11 @@
 export const WELCOME_CONTENT = {
   brand: "Colinet Trotta",
   hero: {
-    eyebrow: "Simulación · 12 turnos · trade-offs reales",
+    eyebrow: "Simulación · 12 meses · trade-offs reales",
     headline: "Tu empresa entra en presión.",
-    headlineAccent: "12 turnos para decidir qué sostiene el negocio.",
+    headlineAccent: "Un año para sostener el negocio.",
     subhead:
-      "Sos dirección en Colinet Trotta. Clientes, caja, equipo y cumplimiento compiten a la vez. Cada palanca que movés tensiona otra.",
+      "Dirigís Colinet Trotta durante 12 meses: clientes, caja, equipo y cumplimiento compiten por los mismos recursos. Cada palanca que movés tensiona otra.",
     promise: "Aprendé gestión tomando decisiones, no leyendo teoría muerta.",
     footer: "No hay respuestas únicas: cada decisión mueve todo el sistema.",
   },
@@ -51,14 +51,14 @@ export const WELCOME_CONTENT = {
   ],
   cta: {
     start: "Iniciar simulación",
-    startHint: "Elegí mandato · ~12 turnos",
-    continue: "Retomar ciclo",
+    startHint: "Elegí mandato · 12 meses",
+    continue: "Retomar año",
     newCycle: "Nuevo mandato",
   },
   savePanel: {
-    title: "Tu ciclo en curso",
+    title: "Tu año en curso",
     scenarioLabel: "Mandato",
-    turnLabel: "Turno",
+    turnLabel: "Mes",
     budgetLabel: "Caja",
     savedLabel: "Guardado",
   },
