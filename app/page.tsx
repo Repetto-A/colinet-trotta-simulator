@@ -94,17 +94,12 @@ export default function Home() {
 
   const handlePlayAgain = () => {
     clear()
-    if (selectedScenario) {
-      const nextState = createScenarioState(selectedScenario)
-      setGameState(nextState)
-      setInitialGameState(nextState)
-      setCurrentSeason("spring")
-      setSessionKey((value) => value + 1)
-      setLoopOverrides(undefined)
-    }
+    setSelectedScenario(null)
+    setLoopOverrides(undefined)
+    setShowSeasonReport(false)
     setCycleResult(null)
     setCycleLearningRecap(undefined)
-    setCurrentScreen("dashboard")
+    setCurrentScreen("scenario")
   }
 
   const handleBackToHome = () => {
