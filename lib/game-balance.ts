@@ -4,8 +4,9 @@ import { getDerivedKpis } from "@/types/business-game"
 /** Equipos dedicados visibles en oficina y pestaña Frentes */
 export const TEAM_SLOT_COUNT = 3
 
-/** Duración del ciclo estratégico en turnos */
-export const CYCLE_TURNS = 10
+/** Duración del mandato: 12 meses (un mes por turno). Cierre natural del ciclo. */
+export const CYCLE_TURNS = 12
+/** Tope de seguridad: jugar más allá del mandato (overstay) se penaliza como timeout. */
 export const MAX_TURNS = 12
 /** Cartas del ciclo (imprevistos / giros favorables): pocas y con peso */
 export const MAX_CYCLE_CARDS = 3
@@ -153,7 +154,7 @@ export function evaluateGameStatus(
     }
   }
 
-  if (state.turn >= MAX_TURNS) {
+  if (state.turn > MAX_TURNS) {
     const outcome = score >= SCORE_PARTIAL ? (score >= SCORE_VICTORY ? "victory" : "partial") : "defeat_timeout"
     const isGameOver = outcome === "defeat_timeout"
 

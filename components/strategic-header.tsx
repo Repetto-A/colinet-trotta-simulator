@@ -80,14 +80,22 @@ export default function StrategicHeader({
             </div>
           </div>
 
-          <Button
-            onClick={onEndCycle}
-            disabled={!canCloseCycle && !isGameOver}
-            size="sm"
-            className="min-h-10 shrink-0 px-3 font-semibold"
-          >
-            {isGameOver ? "Ver resultado" : canCloseCycle ? "Cerrar ciclo" : "Siguiente mes"}
-          </Button>
+          {canCloseCycle || isGameOver ? (
+            <Button
+              onClick={onEndCycle}
+              size="sm"
+              className="min-h-10 shrink-0 px-3 font-semibold"
+            >
+              {isGameOver ? "Ver resultado" : "Cerrar ciclo"}
+            </Button>
+          ) : (
+            <p
+              role="note"
+              className="hidden max-w-[13rem] shrink-0 text-right text-[11px] font-medium leading-tight text-muted-foreground sm:block"
+            >
+              Ejecutá una decisión del deck para avanzar el mes
+            </p>
+          )}
         </div>
 
         {headline !== "Ciclo en curso" && (
