@@ -3,6 +3,7 @@ import type { LucideIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 import { STARTING_BUDGET } from "@/lib/game-balance"
+import { KPI_GLOSSARY, KPI_SHORT } from "@/lib/kpi-glossary"
 import type { BusinessGameState } from "@/types/business-game"
 import { getDerivedKpis } from "@/types/business-game"
 
@@ -49,25 +50,25 @@ interface MetricTheme {
 }
 
 const metricThemes: Record<string, MetricTheme> = {
-  Clientes: {
+  [KPI_SHORT.clients]: {
     icon: Heart,
     iconBg: "bg-blue-100",
     iconColor: "text-blue-700",
     barTrack: "bg-blue-100/70",
   },
-  Control: {
+  [KPI_SHORT.control]: {
     icon: ShieldCheck,
     iconBg: "bg-blue-100",
     iconColor: "text-blue-700",
     barTrack: "bg-blue-100/70",
   },
-  Capacidad: {
+  [KPI_SHORT.capacity]: {
     icon: Users,
     iconBg: "bg-slate-100",
     iconColor: "text-slate-700",
     barTrack: "bg-slate-100",
   },
-  Velocidad: {
+  [KPI_SHORT.speed]: {
     icon: Radar,
     iconBg: "bg-cyan-100",
     iconColor: "text-cyan-700",
@@ -84,6 +85,7 @@ function budgetHealth(money: number): HealthTier {
 
 function NavKpiPill({
   label,
+  fullLabel,
   value,
   tier,
   delta,
@@ -94,8 +96,10 @@ function NavKpiPill({
   barTrack,
   highlighted,
   money = false,
+  onClick,
 }: {
   label: string
+  fullLabel: string
   value: string
   tier: HealthTier
   delta: number
@@ -106,17 +110,20 @@ function NavKpiPill({
   barTrack: string
   highlighted: boolean
   money?: boolean
+  onClick?: () => void
 }) {
   const showDelta = delta !== 0
 
-  return (
-    <div
-      className={cn(
-        "flex min-w-[5.5rem] shrink-0 flex-col rounded-lg border bg-white/95 px-2 py-1.5 shadow-sm sm:min-w-[6.25rem]",
-        pillBorder[tier],
-        highlighted && "kpi-highlight-pulse",
-      )}
-    >
+  const pillClass = cn(
+    "flex min-w-[5.5rem] shrink-0 flex-col rounded-lg border bg-white/95 px-2 py-1.5 shadow-sm sm:min-w-[6.25rem]",
+    pillBorder[tier],
+    highlighted && "kpi-highlight-pulse",
+    onClick &&
+      "cursor-pointer text-left transition-colors hover:border-blue-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60",
+  )
+
+  const body = (
+    <>
       <div className="flex items-center justify-between gap-1">
         <p className="truncate text-[9px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
         <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md", iconBg)}>
@@ -143,6 +150,20 @@ function NavKpiPill({
       <div className={cn("mt-1.5 h-0.5 overflow-hidden rounded-full", barTrack)}>
         <div className={cn("h-full rounded-full transition-all", barTone[tier])} style={{ width: `${pct}%` }} />
       </div>
+    </>
+  )
+
+  if (onClick) {
+    return (
+      <button type="button" onClick={onClick} title={fullLabel} aria-label={`Ver detalle de ${fullLabel}`} className={pillClass}>
+        {body}
+      </button>
+    )
+  }
+
+  return (
+    <div title={fullLabel} className={pillClass}>
+      {body}
     </div>
   )
 }
@@ -171,31 +192,36 @@ export default function NavKpiBar({
 
   const items = [
     {
-      label: "Clientes",
+      label: KPI_SHORT.clients,
+      fullLabel: KPI_GLOSSARY.clients.full,
       value: current.satisfaccion_clientes,
       previousValue: previous.satisfaccion_clientes,
     },
     {
-      label: "Control",
+      label: KPI_SHORT.control,
+      fullLabel: KPI_GLOSSARY.control.full,
       value: current.control_procesos,
       previousValue: previous.control_procesos,
     },
     {
-      label: "Capacidad",
+      label: KPI_SHORT.capacity,
+      fullLabel: KPI_GLOSSARY.capacity.full,
       value: current.capacidad_equipo,
       previousValue: previous.capacidad_equipo,
     },
     {
-      label: "Velocidad",
+      label: KPI_SHORT.speed,
+      fullLabel: KPI_GLOSSARY.speed.full,
       value: current.velocidad_ejecucion,
       previousValue: previous.velocidad_ejecucion,
     },
   ]
 
-  const pills = (
+  const renderPills = (onPillClick?: () => void) => (
     <>
       <NavKpiPill
-        label="Presupuesto"
+        label={KPI_SHORT.budget}
+        fullLabel={KPI_GLOSSARY.budget.full}
         value={`$${gameState.money.toLocaleString("es-AR")}`}
         tier={budgetTier}
         delta={moneyDelta}
@@ -204,8 +230,9 @@ export default function NavKpiBar({
         iconBg="bg-blue-700"
         iconColor="text-blue-100"
         barTrack="bg-blue-50"
-        highlighted={activeHighlight === "Presupuesto"}
+        highlighted={activeHighlight === KPI_SHORT.budget}
         money
+        onClick={onPillClick}
       />
 
       {items.map((item) => {
@@ -218,6 +245,7 @@ export default function NavKpiBar({
           <NavKpiPill
             key={item.label}
             label={item.label}
+            fullLabel={item.fullLabel}
             value={`${rounded}%`}
             tier={tier}
             delta={delta}
@@ -227,6 +255,7 @@ export default function NavKpiBar({
             iconColor={theme.iconColor}
             barTrack={theme.barTrack}
             highlighted={activeHighlight === item.label}
+            onClick={onPillClick}
           />
         )
       })}
@@ -239,27 +268,27 @@ export default function NavKpiBar({
   if (!onOpenDetail) {
     return (
       <div className={cn(scrollClasses, className)} aria-label="Indicadores clave del negocio">
-        {pills}
+        {renderPills()}
       </div>
     )
   }
 
   return (
-    <button
-      type="button"
-      onClick={onOpenDetail}
-      aria-label="Ver KPIs en detalle"
-      className={cn(
-        "group flex items-center gap-1.5 rounded-xl text-left transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60",
-        className,
-      )}
+    <div
+      role="group"
+      aria-label="Indicadores clave del negocio"
+      className={cn("flex items-center gap-1.5 rounded-xl", className)}
     >
-      <span className={cn(scrollClasses, "flex-1")}>{pills}</span>
-      <span className="hidden shrink-0 items-center gap-0.5 self-stretch rounded-lg border border-slate-200/80 bg-white/95 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition-colors group-hover:border-blue-300 group-hover:text-blue-700 sm:flex">
+      <span className={cn(scrollClasses, "flex-1")}>{renderPills(onOpenDetail)}</span>
+      <button
+        type="button"
+        onClick={onOpenDetail}
+        aria-label="Ver KPIs en detalle"
+        className="group flex shrink-0 items-center gap-0.5 self-stretch rounded-lg border border-slate-200/80 bg-white/95 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition-colors hover:border-blue-300 hover:text-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60"
+      >
         Detalle
         <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
-      </span>
-    </button>
+      </button>
+    </div>
   )
 }

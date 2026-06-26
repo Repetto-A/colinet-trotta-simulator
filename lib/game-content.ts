@@ -1,3 +1,5 @@
+import { KPI_SHORT } from "@/lib/kpi-glossary"
+
 export const WELCOME_CONTENT = {
   brand: "Colinet Trotta",
   hero: {
@@ -19,7 +21,7 @@ export const WELCOME_CONTENT = {
     },
     {
       id: "cash",
-      label: "Caja",
+      label: KPI_SHORT.budget,
       value: "$630",
       hint: "Margen justo para abrir frentes",
       tone: "neutral" as const,
@@ -33,7 +35,7 @@ export const WELCOME_CONTENT = {
     },
     {
       id: "team",
-      label: "Equipo",
+      label: KPI_SHORT.capacity,
       value: "50%",
       hint: "Capacidad al límite",
       tone: "critical" as const,
@@ -64,7 +66,7 @@ export const WELCOME_CONTENT = {
   },
   preview: {
     caption: "Vista previa del tablero: KPIs, equipos y decisiones estratégicas.",
-    kpiLabels: ["Presupuesto", "Clientes", "Control", "Capacidad", "Velocidad"],
+    kpiLabels: [KPI_SHORT.budget, KPI_SHORT.clients, KPI_SHORT.control, KPI_SHORT.capacity, KPI_SHORT.speed],
   },
 } as const
 
