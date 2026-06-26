@@ -1,17 +1,18 @@
-import { Heart, Radar, ShieldCheck, TrendingDown, TrendingUp, Users, Wallet } from "lucide-react"
+import { ChevronRight, Heart, Radar, ShieldCheck, TrendingDown, TrendingUp, Users, Wallet } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { useEffect, useState } from "react"
-import { Card } from "@/components/ui/card"
 import { cn } from "@/lib/utils"
 import { STARTING_BUDGET } from "@/lib/game-balance"
 import type { BusinessGameState } from "@/types/business-game"
 import { getDerivedKpis } from "@/types/business-game"
 
-interface KpiStripProps {
+export interface NavKpiBarProps {
   gameState: BusinessGameState
   previousState: BusinessGameState
   highlightLabel?: string | null
   pulseKey?: number
+  className?: string
+  onOpenDetail?: () => void
 }
 
 type HealthTier = "good" | "mid" | "low"
@@ -32,6 +33,12 @@ const barTone: Record<HealthTier, string> = {
   good: "bg-blue-500",
   mid: "bg-blue-300",
   low: "bg-rose-500",
+}
+
+const pillBorder: Record<HealthTier, string> = {
+  good: "border-blue-200/80",
+  mid: "border-slate-200/80",
+  low: "border-rose-200/80",
 }
 
 interface MetricTheme {
@@ -68,27 +75,6 @@ const metricThemes: Record<string, MetricTheme> = {
   },
 }
 
-function DeltaBadge({ delta, money = false }: { delta: number; money?: boolean }) {
-  if (delta === 0) return null
-  const positive = delta > 0
-  const label = money
-    ? `${positive ? "+" : "-"}$${Math.abs(delta)}`
-    : `${positive ? "+" : ""}${delta}`
-
-  return (
-    <span
-      title="vs. turno previo"
-      className={cn(
-        "inline-flex items-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[10px] font-semibold tabular-nums leading-none",
-        positive ? "border-blue-200 bg-blue-50 text-blue-700" : "border-rose-200 bg-rose-50 text-rose-700",
-      )}
-    >
-      {positive ? <TrendingUp className="h-3 w-3 shrink-0" /> : <TrendingDown className="h-3 w-3 shrink-0" />}
-      {label}
-    </span>
-  )
-}
-
 function budgetHealth(money: number): HealthTier {
   const ratio = money / STARTING_BUDGET
   if (ratio >= 0.85) return "good"
@@ -96,12 +82,79 @@ function budgetHealth(money: number): HealthTier {
   return "low"
 }
 
-export default function KpiStrip({
+function NavKpiPill({
+  label,
+  value,
+  tier,
+  delta,
+  pct,
+  icon: Icon,
+  iconBg,
+  iconColor,
+  barTrack,
+  highlighted,
+  money = false,
+}: {
+  label: string
+  value: string
+  tier: HealthTier
+  delta: number
+  pct: number
+  icon: LucideIcon
+  iconBg: string
+  iconColor: string
+  barTrack: string
+  highlighted: boolean
+  money?: boolean
+}) {
+  const showDelta = delta !== 0
+
+  return (
+    <div
+      className={cn(
+        "flex min-w-[5.5rem] shrink-0 flex-col rounded-lg border bg-white/95 px-2 py-1.5 shadow-sm sm:min-w-[6.25rem]",
+        pillBorder[tier],
+        highlighted && "kpi-highlight-pulse",
+      )}
+    >
+      <div className="flex items-center justify-between gap-1">
+        <p className="truncate text-[9px] font-bold uppercase tracking-wide text-slate-400">{label}</p>
+        <div className={cn("flex h-5 w-5 shrink-0 items-center justify-center rounded-md", iconBg)}>
+          <Icon className={cn("h-3 w-3", iconColor)} />
+        </div>
+      </div>
+      <div className="mt-0.5 flex items-baseline gap-1">
+        <p className={cn("text-sm font-bold tabular-nums leading-none sm:text-base", valueTone[tier])}>{value}</p>
+        {showDelta && (
+          <span
+            title="vs. turno previo"
+            className={cn(
+              "inline-flex items-center text-[9px] font-semibold tabular-nums leading-none",
+              delta > 0 ? "text-blue-600" : "text-rose-600",
+            )}
+          >
+            {delta > 0 ? <TrendingUp className="mr-0.5 h-2.5 w-2.5" /> : <TrendingDown className="mr-0.5 h-2.5 w-2.5" />}
+            {money
+              ? `${delta > 0 ? "+" : "-"}$${Math.abs(delta)}`
+              : `${delta > 0 ? "+" : ""}${delta}`}
+          </span>
+        )}
+      </div>
+      <div className={cn("mt-1.5 h-0.5 overflow-hidden rounded-full", barTrack)}>
+        <div className={cn("h-full rounded-full transition-all", barTone[tier])} style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  )
+}
+
+export default function NavKpiBar({
   gameState,
   previousState,
   highlightLabel = null,
   pulseKey = 0,
-}: KpiStripProps) {
+  className,
+  onOpenDetail,
+}: NavKpiBarProps) {
   const [activeHighlight, setActiveHighlight] = useState<string | null>(null)
   const current = getDerivedKpis(gameState)
   const previous = getDerivedKpis(previousState)
@@ -139,80 +192,74 @@ export default function KpiStrip({
     },
   ]
 
-  return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-      <Card
-        className={cn(
-          "col-span-2 border-slate-200/80 bg-white/90 p-3 shadow-sm backdrop-blur-sm sm:col-span-1",
-          activeHighlight === "Presupuesto" && "kpi-highlight-pulse",
-        )}
-      >
-        <div className="flex items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Presupuesto</p>
-            <div className="mt-0.5 flex flex-wrap items-baseline gap-2">
-              <p className={cn("text-xl font-bold tabular-nums tracking-tight sm:text-2xl", valueTone[budgetTier])}>
-                ${gameState.money.toLocaleString("es-AR")}
-              </p>
-              <DeltaBadge delta={moneyDelta} money />
-            </div>
-          </div>
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-blue-700">
-            <Wallet className="h-3.5 w-3.5 text-blue-100" />
-          </div>
-        </div>
-        <div className="mt-2 space-y-1">
-          <div className="flex items-center justify-between text-[10px] font-medium text-slate-400">
-            <span>Caja vs. inicio</span>
-            <span className="tabular-nums text-slate-600">{budgetPct}%</span>
-          </div>
-          <div className="h-1 overflow-hidden rounded-full bg-blue-50">
-            <div
-              className={cn("h-full rounded-full transition-all", barTone[budgetTier])}
-              style={{ width: `${budgetPct}%` }}
-            />
-          </div>
-        </div>
-      </Card>
+  const pills = (
+    <>
+      <NavKpiPill
+        label="Presupuesto"
+        value={`$${gameState.money.toLocaleString("es-AR")}`}
+        tier={budgetTier}
+        delta={moneyDelta}
+        pct={budgetPct}
+        icon={Wallet}
+        iconBg="bg-blue-700"
+        iconColor="text-blue-100"
+        barTrack="bg-blue-50"
+        highlighted={activeHighlight === "Presupuesto"}
+        money
+      />
 
       {items.map((item) => {
         const theme = metricThemes[item.label]
-        const Icon = theme.icon
         const tier = healthTier(item.value)
         const delta = Math.round(item.value - item.previousValue)
         const rounded = Math.round(item.value)
 
         return (
-          <Card
+          <NavKpiPill
             key={item.label}
-            className={cn(
-              "border-slate-200/80 bg-white/90 p-3 shadow-sm backdrop-blur-sm",
-              activeHighlight === item.label && "kpi-highlight-pulse",
-            )}
-          >
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">{item.label}</p>
-                <div className="mt-0.5 flex flex-wrap items-baseline gap-1.5">
-                  <p className={cn("text-xl font-bold tabular-nums tracking-tight sm:text-2xl", valueTone[tier])}>
-                    {rounded}%
-                  </p>
-                  <DeltaBadge delta={delta} />
-                </div>
-              </div>
-              <div className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-md", theme.iconBg)}>
-                <Icon className={cn("h-3.5 w-3.5", theme.iconColor)} />
-              </div>
-            </div>
-            <div className={cn("mt-2 h-1 overflow-hidden rounded-full", theme.barTrack)}>
-              <div
-                className={cn("h-full rounded-full transition-all", barTone[tier])}
-                style={{ width: `${Math.min(100, Math.max(0, rounded))}%` }}
-              />
-            </div>
-          </Card>
+            label={item.label}
+            value={`${rounded}%`}
+            tier={tier}
+            delta={delta}
+            pct={Math.min(100, Math.max(0, rounded))}
+            icon={theme.icon}
+            iconBg={theme.iconBg}
+            iconColor={theme.iconColor}
+            barTrack={theme.barTrack}
+            highlighted={activeHighlight === item.label}
+          />
         )
       })}
-    </div>
+    </>
+  )
+
+  const scrollClasses =
+    "flex gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+
+  if (!onOpenDetail) {
+    return (
+      <div className={cn(scrollClasses, className)} aria-label="Indicadores clave del negocio">
+        {pills}
+      </div>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenDetail}
+      aria-label="Ver KPIs en detalle"
+      className={cn(
+        "group flex items-center gap-1.5 rounded-xl text-left transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60",
+        className,
+      )}
+    >
+      <span className={cn(scrollClasses, "flex-1")}>{pills}</span>
+      <span className="hidden shrink-0 items-center gap-0.5 self-stretch rounded-lg border border-slate-200/80 bg-white/95 px-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500 transition-colors group-hover:border-blue-300 group-hover:text-blue-700 sm:flex">
+        Detalle
+        <ChevronRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+      </span>
+    </button>
   )
 }

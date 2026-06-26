@@ -22,8 +22,6 @@ import AchievementSystem from "@/components/achievement-system"
 
 import StrategicHeader from "@/components/strategic-header"
 
-import KpiStrip from "@/components/kpi-strip"
-
 import GameProgressStrip from "@/components/game-progress-strip"
 
 import MobileDecisionDock from "@/components/mobile-decision-dock"
@@ -106,7 +104,7 @@ export default function GameDashboard({
 
 
 
-  const [showDataModal, setShowDataModal] = useState(false)
+  const [showDetail, setShowDetail] = useState(false)
 
   const [showInitiativeSelector, setShowInitiativeSelector] = useState(false)
 
@@ -176,7 +174,7 @@ export default function GameDashboard({
     onPersist,
   ])
 
-  const isAnyModalOpen = showDataModal || showInitiativeSelector || Boolean(activeEvent)
+  const isAnyModalOpen = showDetail || showInitiativeSelector || Boolean(activeEvent)
 
 
 
@@ -441,6 +439,8 @@ export default function GameDashboard({
 
           score={gameStatus.score}
 
+          stars={gameStatus.stars}
+
           scenarioName={scenarioName}
 
           currentSeason={season}
@@ -451,9 +451,17 @@ export default function GameDashboard({
 
           headline={gameStatus.headline}
 
-          onOpenSignals={() => setShowDataModal(true)}
+          gameState={gameState}
+
+          previousGameState={previousGameState}
+
+          highlightLabel={topChangedKpi}
+
+          pulseKey={feedbackPulseKey}
 
           onEndCycle={() => onEndCycle(gameStatus, learningRecap)}
+
+          onOpenDetail={() => setShowDetail(true)}
 
         />
       </div>
@@ -462,20 +470,12 @@ export default function GameDashboard({
 
       <div className="container mx-auto space-y-4 px-3 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-4 sm:space-y-5 sm:px-4 md:px-6 md:py-6 dashboard-main">
 
-        <KpiStrip
-          gameState={gameState}
-          previousState={previousGameState}
-          highlightLabel={topChangedKpi}
-          pulseKey={feedbackPulseKey}
-        />
-
         <ActiveEventsRail modifiers={gameState.activeModifiers} pendingEvent={activeEvent} />
 
         {alerts.length > 0 && <AlertList alerts={alerts} onDismiss={dismissAlert} />}
 
         <GameProgressStrip
           score={gameStatus.score}
-          stars={gameStatus.stars}
           turn={gameState.turn}
           storyBeat={storyBeat}
           feedback={lastTurnFeedback}
@@ -564,11 +564,11 @@ export default function GameDashboard({
 
 
 
-      {showDataModal && (
+      {showDetail && (
 
         <DataModal
 
-          onClose={() => setShowDataModal(false)}
+          onClose={() => setShowDetail(false)}
 
           scenarioName={scenarioName}
 

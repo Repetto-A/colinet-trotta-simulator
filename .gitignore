@@ -26,4 +26,5 @@ Thumbs.db
 .atl/
 .playwright-cli/
 .playwright-mcp/
+.playwright-audit/
 .vercel

@@ -1,22 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { AlertTriangle, ChevronDown, ChevronUp, Star, Target } from "lucide-react"
+import { AlertTriangle, ChevronDown, ChevronUp, Target } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { StoryBeat } from "@/lib/story-arc"
 import type { TurnFeedbackSummary } from "@/lib/game-engine"
-import {
-  MAX_TURNS,
-  SCORE_EXCELLENT,
-  SCORE_VICTORY,
-  getCycleProgress,
-  getScoreProgress,
-  type GameStatus,
-} from "@/lib/game-balance"
+import { MAX_TURNS, SCORE_EXCELLENT, SCORE_VICTORY, getScoreProgress } from "@/lib/game-balance"
 
 interface GameProgressStripProps {
   score: number
-  stars: GameStatus["stars"]
   turn: number
   storyBeat: StoryBeat
   feedback: TurnFeedbackSummary | null
@@ -33,7 +25,6 @@ function feedbackPills(feedback: TurnFeedbackSummary | null) {
 
 export default function GameProgressStrip({
   score,
-  stars,
   turn,
   storyBeat,
   feedback,
@@ -41,7 +32,6 @@ export default function GameProgressStrip({
   initialExpanded = false,
 }: GameProgressStripProps) {
   const [expanded, setExpanded] = useState(initialExpanded)
-  const cycleProgress = getCycleProgress(turn, maxTurns)
   const scoreProgress = getScoreProgress(score)
   const pills = feedbackPills(feedback)
 
@@ -54,33 +44,16 @@ export default function GameProgressStrip({
       <button
         type="button"
         onClick={() => setExpanded((value) => !value)}
-        className="flex w-full items-center gap-2 px-3 py-2.5 text-left transition-colors hover:bg-slate-50/80 sm:gap-3 sm:px-4"
+        className="flex w-full items-center gap-3 px-3 py-2.5 text-left transition-colors hover:bg-slate-50/80 sm:px-4"
         aria-expanded={expanded}
       >
-        <div className="flex shrink-0 items-center gap-0.5">
-          {[1, 2, 3].map((level) => (
-            <Star
-              key={level}
-              className={cn(
-                "h-3.5 w-3.5 sm:h-4 sm:w-4",
-                stars >= level ? "fill-amber-400 text-amber-400" : "text-slate-300",
-              )}
-            />
-          ))}
+        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-indigo-50">
+          <Target className="h-4 w-4 text-indigo-600" />
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs sm:text-sm">
-            <span className="font-bold tabular-nums text-slate-900">{score} pts</span>
-            <span className="text-slate-300">·</span>
-            <span className="font-medium text-slate-600">
-              Avance {turn}/{maxTurns}
-            </span>
-            <span className="hidden text-slate-300 sm:inline">·</span>
-            <span className="hidden truncate font-medium text-slate-700 sm:inline">{storyBeat.title}</span>
-          </div>
-
-          {pills && !expanded && (
+          <p className="truncate text-xs font-semibold text-slate-900 sm:text-sm">{storyBeat.title}</p>
+          {pills && !expanded ? (
             <div className="mt-1 flex flex-wrap gap-1">
               {pills.map((item) => (
                 <span
@@ -95,18 +68,20 @@ export default function GameProgressStrip({
                 </span>
               ))}
             </div>
+          ) : (
+            <p className="truncate text-[11px] text-slate-500">Misión del mes · objetivos y feedback</p>
           )}
         </div>
 
-        <div className="hidden w-24 shrink-0 sm:block">
+        <div className="hidden w-28 shrink-0 sm:block">
           <div className="mb-0.5 flex justify-between text-[10px] text-slate-500">
-            <span>Avance</span>
-            <span>{cycleProgress}%</span>
+            <span>A victoria</span>
+            <span className="tabular-nums">{scoreProgress.progressToVictory}%</span>
           </div>
           <div className="h-1 overflow-hidden rounded-full bg-slate-100">
             <div
-              className="h-full rounded-full bg-indigo-500 transition-all"
-              style={{ width: `${cycleProgress}%` }}
+              className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all"
+              style={{ width: `${scoreProgress.progressToVictory}%` }}
             />
           </div>
         </div>
@@ -132,55 +107,27 @@ export default function GameProgressStrip({
             </div>
           </div>
 
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid gap-2">
             <div className="space-y-1">
-              <div className="flex justify-between text-[10px] text-slate-500">
-                <span>Avance del capítulo</span>
-                <span>
-                  {turn}/{maxTurns} · {cycleProgress}%
-                </span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-indigo-500 transition-all"
-                  style={{ width: `${cycleProgress}%` }}
-                />
-              </div>
-            </div>
-            <div className="space-y-1">
-              <div className="flex justify-between text-[10px] text-slate-500">
-                <span>Avance del ciclo</span>
-                <span>
-                  {turn}/{maxTurns} · {cycleProgress}%
-                </span>
-              </div>
-              <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-sky-500 to-indigo-500"
-                  style={{ width: `${cycleProgress}%` }}
-                />
-              </div>
-            </div>
-            <div className="space-y-1 sm:col-span-2">
               <div className="flex justify-between text-[10px] text-slate-500">
                 <span>Puntaje rumbo a victoria ({SCORE_VICTORY}+ pts)</span>
-                <span>{scoreProgress.progressToVictory}%</span>
+                <span className="tabular-nums">{scoreProgress.progressToVictory}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500"
+                  className="h-full rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all"
                   style={{ width: `${scoreProgress.progressToVictory}%` }}
                 />
               </div>
             </div>
-            <div className="space-y-1 sm:col-span-2">
+            <div className="space-y-1">
               <div className="flex justify-between text-[10px] text-slate-500">
                 <span>Puntaje rumbo a excelencia ({SCORE_EXCELLENT}+ pts)</span>
-                <span>{scoreProgress.progressToExcellent}%</span>
+                <span className="tabular-nums">{scoreProgress.progressToExcellent}%</span>
               </div>
               <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
                 <div
-                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500"
+                  className="h-full rounded-full bg-gradient-to-r from-amber-400 to-amber-500 transition-all"
                   style={{ width: `${scoreProgress.progressToExcellent}%` }}
                 />
               </div>

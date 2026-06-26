@@ -113,7 +113,7 @@ export default function DataModal({
           <div>
             <h2 className="flex items-center gap-2 text-2xl font-bold">
               <Building2 className="h-6 w-6 text-primary" />
-              Panel de señales estratégicas
+              KPIs en detalle
             </h2>
             <p className="mt-1 text-sm text-muted-foreground">
               {scenarioName} · turno {snapshot.turn} · fase {SEASONS[currentSeason].name}
@@ -124,7 +124,7 @@ export default function DataModal({
             size="icon-lg"
             onClick={onClose}
             className="hover:bg-white/50"
-            aria-label="Cerrar panel de señales"
+            aria-label="Cerrar panel de KPIs"
           >
             <X className="h-5 w-5" />
           </Button>
