@@ -4,6 +4,7 @@ import { Heart, Radar, ShieldCheck, Users, Wallet } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 import { WELCOME_CONTENT } from "@/lib/game-content"
 import { cycleMonthName } from "@/lib/cycle-months"
+import { KPI_SHORT } from "@/lib/kpi-glossary"
 import { cn } from "@/lib/utils"
 
 interface MockKpi {
@@ -22,7 +23,7 @@ interface MockKpi {
 // Espeja KpiStrip: azul=sano, slate=medio, rose=bajo, cian=velocidad
 const MOCK_KPIS: MockKpi[] = [
   {
-    label: "Clientes",
+    label: KPI_SHORT.clients,
     value: "54%",
     pct: 54,
     icon: Heart,
@@ -34,7 +35,7 @@ const MOCK_KPIS: MockKpi[] = [
     pulse: true,
   },
   {
-    label: "Control",
+    label: KPI_SHORT.control,
     value: "70%",
     pct: 70,
     icon: ShieldCheck,
@@ -45,7 +46,7 @@ const MOCK_KPIS: MockKpi[] = [
     track: "bg-blue-100/70",
   },
   {
-    label: "Equipo",
+    label: KPI_SHORT.capacity,
     value: "50%",
     pct: 50,
     icon: Users,
@@ -56,7 +57,7 @@ const MOCK_KPIS: MockKpi[] = [
     track: "bg-slate-100",
   },
   {
-    label: "Ritmo",
+    label: KPI_SHORT.speed,
     value: "54%",
     pct: 54,
     icon: Radar,
@@ -86,7 +87,7 @@ export default function WelcomeGamePreview() {
           {/* Presupuesto — tarjeta destacada */}
           <div className="col-span-2 rounded-xl border border-slate-200/80 bg-white p-3 shadow-sm sm:col-span-1">
             <div className="flex items-center justify-between gap-1">
-              <p className="min-w-0 truncate text-[10px] font-bold uppercase tracking-wide text-slate-400">Caja</p>
+              <p className="min-w-0 truncate text-[10px] font-bold uppercase tracking-wide text-slate-400">{KPI_SHORT.budget}</p>
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-blue-700">
                 <Wallet className="h-3 w-3 text-blue-100" />
               </span>

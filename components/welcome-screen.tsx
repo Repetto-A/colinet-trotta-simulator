@@ -2,9 +2,19 @@
 
 import WelcomeGamePreview from "@/components/welcome-game-preview"
 import { Button } from "@/components/ui/button"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { WELCOME_CONTENT } from "@/lib/game-content"
 import { cycleMonthName } from "@/lib/cycle-months"
-import { cn } from "@/lib/utils"
 import { ArrowRight, Clock, Play, RotateCcw, Wallet } from "lucide-react"
 
 export interface SavedSessionInfo {
@@ -89,22 +99,48 @@ export default function WelcomeScreen({ onStart, onContinue, savedSession }: Wel
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <Button
-                size="lg"
-                onClick={onStart}
-                className={cn(
-                  "group min-h-12 w-full touch-manipulation rounded-xl px-7 text-base font-bold transition-transform hover:-translate-y-0.5 focus-visible:ring-2 focus-visible:ring-offset-2 sm:w-auto",
-                  hasSave
-                    ? "border border-slate-300 bg-white text-slate-800 hover:bg-slate-50 focus-visible:ring-slate-400"
-                    : "bg-blue-700 text-white shadow-sm hover:bg-blue-800 focus-visible:ring-blue-500",
-                )}
-              >
-                {hasSave ? cta.newCycle : cta.start}
-                <ArrowRight
-                  aria-hidden="true"
-                  className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                />
-              </Button>
+              {hasSave && savedSession ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      size="lg"
+                      className="group min-h-12 w-full touch-manipulation rounded-xl border border-slate-300 bg-white px-7 text-base font-bold text-slate-800 transition-transform hover:-translate-y-0.5 hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 sm:w-auto"
+                    >
+                      {cta.newCycle}
+                      <ArrowRight
+                        aria-hidden="true"
+                        className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                      />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>¿Empezar un nuevo mandato?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Tenés una partida guardada ({savedSession.scenarioName} ·{" "}
+                        {cycleMonthName(savedSession.turn)}). Si empezás un nuevo mandato se borrará tu
+                        progreso actual. Esta acción no se puede deshacer.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction onClick={onStart}>Sí, empezar de nuevo</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : (
+                <Button
+                  size="lg"
+                  onClick={onStart}
+                  className="group min-h-12 w-full touch-manipulation rounded-xl bg-blue-700 px-7 text-base font-bold text-white shadow-sm transition-transform hover:-translate-y-0.5 hover:bg-blue-800 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:w-auto"
+                >
+                  {cta.start}
+                  <ArrowRight
+                    aria-hidden="true"
+                    className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  />
+                </Button>
+              )}
             </div>
 
             <div className="space-y-2 pt-1">
