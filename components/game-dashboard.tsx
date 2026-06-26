@@ -554,6 +554,8 @@ export default function GameDashboard({
 
           canCloseCycle={canCloseCycle}
 
+          isGameOver={isGameOver}
+
           onJumpToDecisions={handleJumpToDecisions}
 
           onCloseCycle={() => onEndCycle(gameStatus, learningRecap)}

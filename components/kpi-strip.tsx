@@ -49,7 +49,9 @@ interface MetricTheme {
   barTrack: string
 }
 
-const metricThemes: Record<string, MetricTheme> = {
+type KpiShortValue = (typeof KPI_SHORT)[keyof typeof KPI_SHORT]
+
+const metricThemes: Partial<Record<KpiShortValue, MetricTheme>> = {
   [KPI_SHORT.clients]: {
     icon: Heart,
     iconBg: "bg-blue-100",
@@ -237,6 +239,7 @@ export default function NavKpiBar({
 
       {items.map((item) => {
         const theme = metricThemes[item.label]
+        if (!theme) return null
         const tier = healthTier(item.value)
         const delta = Math.round(item.value - item.previousValue)
         const rounded = Math.round(item.value)
