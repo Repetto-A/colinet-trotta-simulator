@@ -1,11 +1,11 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { X, TrendingUp, TrendingDown, Activity, ShieldCheck, Building2, Workflow } from "lucide-react"
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts"
+import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { SEASONS, type Season } from "@/types/initiatives"
 import type { BusinessGameState } from "@/types/business-game"
@@ -34,16 +34,14 @@ function KpiComparisonChart({ data }: { data: KpiComparisonPoint[] }) {
       }}
       className="h-[280px]"
     >
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-          <XAxis type="number" domain={[0, 100]} />
-          <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
-          <ChartTooltip content={<ChartTooltipContent />} />
-          <Bar dataKey="previous" fill="hsl(0, 0%, 60%)" radius={[0, 4, 4, 0]} barSize={14} />
-          <Bar dataKey="current" fill="hsl(217, 91%, 60%)" radius={[0, 4, 4, 0]} barSize={14} />
-        </BarChart>
-      </ResponsiveContainer>
+      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
+        <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+        <XAxis type="number" domain={[0, 100]} />
+        <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 11 }} />
+        <ChartTooltip content={<ChartTooltipContent />} />
+        <Bar dataKey="previous" fill="hsl(0, 0%, 60%)" radius={[0, 4, 4, 0]} barSize={14} />
+        <Bar dataKey="current" fill="hsl(217, 91%, 60%)" radius={[0, 4, 4, 0]} barSize={14} />
+      </BarChart>
     </ChartContainer>
   )
 }
@@ -87,6 +85,14 @@ export default function DataModal({
 }: DataModalProps) {
   const [selectedTab, setSelectedTab] = useState<SignalGroup>("market")
 
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose()
+    }
+    window.addEventListener("keydown", handleKeyDown)
+    return () => window.removeEventListener("keydown", handleKeyDown)
+  }, [onClose])
+
   const snapshot = useMemo(
     () => getSignalSnapshot(gameState, previousGameState),
     [gameState, previousGameState],
@@ -107,11 +113,19 @@ export default function DataModal({
   ]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-background/80 p-4 backdrop-blur-sm">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="data-modal-title"
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-background/80 p-4 backdrop-blur-sm"
+    >
       <Card className="max-h-[90vh] w-full max-w-5xl overflow-y-auto shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-gradient-to-r from-sky-50 to-blue-50 p-6">
           <div>
-            <h2 className="flex items-center gap-2 text-2xl font-bold">
+            <h2 id="data-modal-title" className="flex items-center gap-2 text-2xl font-bold">
               <Building2 className="h-6 w-6 text-primary" />
               KPIs en detalle
             </h2>
