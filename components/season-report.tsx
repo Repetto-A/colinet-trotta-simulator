@@ -88,7 +88,7 @@ export default function SeasonReport({ gameState, initialData, onClose, onContin
               <h2 className="text-3xl font-bold text-balance">Debrief del ciclo</h2>
               <p className="text-muted-foreground mt-1">Cierre del capítulo operativo: qué funcionó, qué se tensionó y qué sigue</p>
             </div>
-            <Button variant="ghost" size="icon" onClick={onClose} className="hover:bg-accent">
+            <Button variant="ghost" size="icon" onClick={onClose} aria-label="Cerrar debrief del ciclo" className="hover:bg-accent">
               <X className="h-5 w-5" />
             </Button>
           </div>
