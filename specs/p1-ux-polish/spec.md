@@ -71,9 +71,12 @@ fricción.
 
 ## Bonus (mismo PR, solo si pequeño y testeado)
 
-- **REP-16** — Recharts width/height -1: en `components/data-modal.tsx` `KpiComparisonChart` hay un
-  `<ResponsiveContainer>` redundante dentro de `ChartContainer` (que ya envuelve en uno). Se elimina el
-  wrapper redundante.
+- **REP-16** — Recharts width/height -1: en `components/data-modal.tsx` `KpiComparisonChart` se elimina
+  el `<ResponsiveContainer>` redundante dentro de `ChartContainer` (que ya envuelve en uno) — causa
+  señalada en la auditoría. **Parcial:** persiste un warning transitorio de montaje proveniente del
+  propio `ChartContainer` (primitivo compartido `components/ui/chart.tsx`, `flex aspect-video` +
+  `ResponsiveContainer`); un fix completo requeriría tocar ese primitivo compartido, fuera del alcance
+  "trivial" de un bonus. Se deja como parcialmente resuelto.
 - **REP-18** — A11y DataModal: `role="dialog"`, `aria-modal`, `aria-labelledby` + `id` en el `<h2>`,
   cierre con `Escape` y clic en backdrop. Solo `data-modal.tsx` (otros modales quedan deferred).
 - **REP-19** — Tests de persistencia: `tests/use-game-persistence.test.ts` (con `// @vitest-environment
