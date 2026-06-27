@@ -7,6 +7,7 @@ import type { BusinessActionDefinition } from "@/lib/business-decisions"
 interface MobileDecisionDockProps {
   suggestedAction?: BusinessActionDefinition
   canCloseCycle: boolean
+  isGameOver?: boolean
   onJumpToDecisions: () => void
   onCloseCycle: () => void
 }
@@ -14,10 +15,12 @@ interface MobileDecisionDockProps {
 export default function MobileDecisionDock({
   suggestedAction,
   canCloseCycle,
+  isGameOver = false,
   onJumpToDecisions,
   onCloseCycle,
 }: MobileDecisionDockProps) {
-  const handlePrimaryAction = canCloseCycle ? onCloseCycle : onJumpToDecisions
+  const canEndCycle = canCloseCycle || isGameOver
+  const handlePrimaryAction = canEndCycle ? onCloseCycle : onJumpToDecisions
 
   return (
     <div className="fixed inset-x-0 bottom-0 z-30 border-t bg-white/95 px-3 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(15,23,42,0.12)] backdrop-blur lg:hidden">
@@ -28,12 +31,16 @@ export default function MobileDecisionDock({
             Próximo movimiento
           </div>
           <p className="truncate text-sm font-bold text-slate-950">
-            {canCloseCycle ? "Ya podés cerrar el ciclo" : suggestedAction?.title ?? "Elegí una decisión estratégica"}
+            {isGameOver
+              ? "El ciclo terminó"
+              : canCloseCycle
+                ? "Ya podés cerrar el ciclo"
+                : suggestedAction?.title ?? "Elegí una decisión estratégica"}
           </p>
         </div>
         <Button onClick={handlePrimaryAction} className="min-h-11 shrink-0 gap-2">
-          {canCloseCycle ? "Cerrar ciclo" : "Decidir"}
-          {!canCloseCycle && <ArrowDown className="h-4 w-4" />}
+          {isGameOver ? "Ver resultado" : canCloseCycle ? "Cerrar ciclo" : "Decidir"}
+          {!canEndCycle && <ArrowDown className="h-4 w-4" />}
         </Button>
       </div>
     </div>

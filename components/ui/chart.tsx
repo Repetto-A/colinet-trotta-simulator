@@ -62,7 +62,13 @@ function ChartContainer({
         {...props}
       >
         <ChartStyle id={chartId} config={config} />
-        <RechartsPrimitive.ResponsiveContainer>
+        {/*
+         * `initialDimension` seeds a positive height so Recharts' first-render
+         * measurement isn't (-1, -1) (its ResizeObserver only reports real size
+         * on the next frame). This silences the benign "width(-1) and height(-1)"
+         * warning; the actual size is still measured from the container. (REP-16)
+         */}
+        <RechartsPrimitive.ResponsiveContainer initialDimension={{ width: 0, height: 1 }}>
           {children}
         </RechartsPrimitive.ResponsiveContainer>
       </div>

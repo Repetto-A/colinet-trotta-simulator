@@ -84,8 +84,20 @@ fricción.
   versión inválida y `formatSaveSummary`.
 - **Quick win** — `components/season-report.tsx`: `aria-label` en el botón de cerrar (solo ícono).
 
-**Deferred (no en este PR):** a11y de `event-modal`/`initiative-selector` (mismo patrón que REP-18,
-pero >alcance), alineación de labels de office-scene, reformateo cosmético de `game-dashboard.tsx`.
+### Cierre de follow-ups (PR posterior `cursor/p1-ux-followups-rep-16-18-20-e71f`)
+
+Tras la auditoría 2026-06-26, los ⚠️ y el follow-up menor se cerraron en un PR aparte:
+- **REP-16 ✅** — el `ChartContainer` de `data-modal.tsx` pasa a dimensiones explícitas (`aspect-auto
+  h-[280px] w-full`), lo que da tamaño definido al `ResponsiveContainer` y elimina el warning
+  `width/height -1` (verificado en consola).
+- **REP-18 ✅** — DataModal suma focus-trap (Tab/Shift+Tab cíclico dentro del diálogo), foco inicial
+  al abrir y restauración del foco al cerrar (además de role/aria/Escape/backdrop ya existentes).
+- **REP-20 ✅** — `game-engine.ts` (`businessMetricLabels`/`feedbackMetrics`) y `tensionPillars[0]`
+  consumen `KPI_SHORT`; `metricThemes` se tipa como `Partial<Record<KpiShortValue, MetricTheme>>` con
+  guard; `MobileDecisionDock` recibe `isGameOver` y muestra "Ver resultado" (paridad con el header).
+
+**Deferred (aún no):** a11y de `event-modal`/`initiative-selector` (mismo patrón que REP-18, pero
+>alcance), alineación de labels de office-scene, reformateo cosmético de `game-dashboard.tsx`.
 
 ## Validación
 

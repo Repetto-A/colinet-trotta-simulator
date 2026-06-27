@@ -12,6 +12,7 @@ import {
   MAX_TURNS,
   TACTICAL_TUNE_COST,
 } from "@/lib/game-balance"
+import { KPI_SHORT } from "@/lib/kpi-glossary"
 import { calculateRotationEffect, INITIATIVES, SEASONS, type InitiativeType, type Season } from "@/types/initiatives"
 import {
   readCoreMetric,
@@ -81,11 +82,11 @@ const tuneMetricIds = [...coreMetricIds, "sustainability"] as const
 type TuneMetricId = (typeof tuneMetricIds)[number]
 
 const businessMetricLabels: Record<TuneMetricId, string> = {
-  clientSatisfaction: "Clientes",
-  processControl: "Control",
-  teamCapacity: "Capacidad",
-  executionSpeed: "Velocidad",
-  sustainability: "Confianza",
+  clientSatisfaction: KPI_SHORT.clients,
+  processControl: KPI_SHORT.control,
+  teamCapacity: KPI_SHORT.capacity,
+  executionSpeed: KPI_SHORT.speed,
+  sustainability: KPI_SHORT.confidence,
 }
 
 function readMetric(state: BusinessGameState, metric: TuneMetricId): number {
@@ -506,12 +507,12 @@ export function buildThresholdAlerts(state: BusinessGameState): string[] {
 }
 
 const feedbackMetrics: Array<{ metric: TuneMetricId | "money"; label: string }> = [
-  { metric: "clientSatisfaction", label: "Clientes" },
-  { metric: "processControl", label: "Control" },
-  { metric: "teamCapacity", label: "Capacidad" },
-  { metric: "executionSpeed", label: "Velocidad" },
-  { metric: "sustainability", label: "Confianza" },
-  { metric: "money", label: "Presupuesto" },
+  { metric: "clientSatisfaction", label: KPI_SHORT.clients },
+  { metric: "processControl", label: KPI_SHORT.control },
+  { metric: "teamCapacity", label: KPI_SHORT.capacity },
+  { metric: "executionSpeed", label: KPI_SHORT.speed },
+  { metric: "sustainability", label: KPI_SHORT.confidence },
+  { metric: "money", label: KPI_SHORT.budget },
 ]
 
 export function createTurnFeedback(

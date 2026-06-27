@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -32,7 +32,7 @@ function KpiComparisonChart({ data }: { data: KpiComparisonPoint[] }) {
         current: { label: "Turno actual", color: "hsl(217, 91%, 60%)" },
         previous: { label: "Turno anterior", color: "hsl(0, 0%, 60%)" },
       }}
-      className="h-[280px]"
+      className="aspect-auto h-[280px] w-full"
     >
       <BarChart data={data} layout="vertical" margin={{ left: 8, right: 16 }}>
         <CartesianGrid strokeDasharray="3 3" horizontal={false} />
@@ -84,13 +84,55 @@ export default function DataModal({
   previousGameState,
 }: DataModalProps) {
   const [selectedTab, setSelectedTab] = useState<SignalGroup>("market")
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose()
+    const previouslyFocused = document.activeElement as HTMLElement | null
+
+    const getFocusable = () => {
+      const node = dialogRef.current
+      if (!node) return [] as HTMLElement[]
+      return Array.from(
+        node.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null)
     }
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
+
+    // Foco inicial dentro del diálogo (primer elemento enfocable, o el contenedor).
+    const first = getFocusable()[0]
+    ;(first ?? dialogRef.current)?.focus()
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        onClose()
+        return
+      }
+      if (event.key !== "Tab") return
+
+      const focusable = getFocusable()
+      if (focusable.length === 0) {
+        event.preventDefault()
+        return
+      }
+      const firstEl = focusable[0]
+      const lastEl = focusable[focusable.length - 1]
+      const active = document.activeElement
+
+      if (event.shiftKey && (active === firstEl || active === dialogRef.current)) {
+        event.preventDefault()
+        lastEl.focus()
+      } else if (!event.shiftKey && active === lastEl) {
+        event.preventDefault()
+        firstEl.focus()
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown)
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown)
+      previouslyFocused?.focus?.()
+    }
   }, [onClose])
 
   const snapshot = useMemo(
@@ -114,13 +156,15 @@ export default function DataModal({
 
   return (
     <div
+      ref={dialogRef}
       role="dialog"
       aria-modal="true"
       aria-labelledby="data-modal-title"
+      tabIndex={-1}
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
-      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-background/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-50 flex items-center justify-center overscroll-contain bg-background/80 p-4 outline-none backdrop-blur-sm"
     >
       <Card className="max-h-[90vh] w-full max-w-5xl overflow-y-auto shadow-2xl">
         <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-gradient-to-r from-sky-50 to-blue-50 p-6">

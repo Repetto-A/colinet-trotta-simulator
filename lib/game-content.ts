@@ -14,7 +14,7 @@ export const WELCOME_CONTENT = {
   tensionPillars: [
     {
       id: "clients",
-      label: "Clientes",
+      label: KPI_SHORT.clients,
       value: "54%",
       hint: "Enterprise exige señales claras",
       tone: "warning" as const,
